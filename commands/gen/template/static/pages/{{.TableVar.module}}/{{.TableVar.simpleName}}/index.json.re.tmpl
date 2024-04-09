@@ -52,17 +52,17 @@
             "type": "group",
             "body": [
               {
+                "label": "ID",
                 "type": "input-text",
                 "size": "sm",
                 "name": "id",
-                "label": "ID",
                 "clearable": true,
                 "placeholder": "ID搜索"
               },
               {
+                "label": "状态",
                 "type": "select",
                 "size": "sm",
-                "label": "状态",
                 "name": "status",
                 "source": "${options['{{.Table.Name}}.status']}"
               }
@@ -84,9 +84,9 @@
                 "body": [
                   {{range $i, $e := .Table.Columns}}{{if not (eq $e.Name $pk.Name) }}
                   {
+                    "label": "{{LineString $e.Comment}}",
                     "type": "input-text",
-                    "name": "{{$e.Name}}",
-                    "label": "{{LineString $e.Comment}}"
+                    "name": "{{$e.Name}}"
                   }{{if lt (Add $i 1) $colLen}},{{end}}{{end}}
                   {{end}}
                 ]
@@ -135,8 +135,8 @@
       "columns": [
         {{range $i, $e := .Table.Columns}}
         {
-          "name": "{{$e.Name}}",
-          "label": "{{LineString $e.Comment}}"
+          "label": "{{LineString $e.Comment}}",
+          "name": "{{$e.Name}}"
         },
         {{end}}
         {
@@ -155,9 +155,9 @@
                   "body": [
                     {{range $i, $e := .Table.Columns}}
                     {
+                      "label": "{{LineString $e.Comment}}",
                       "type": "static",
-                      "name": "{{$e.Name}}",
-                      "label": "{{LineString $e.Comment}}"
+                      "name": "{{$e.Name}}"
                     }{{if lt (Add $i 1) $colLen}},{{end}}
                     {{end}}
                   ]
@@ -187,9 +187,9 @@
                   "body": [
                     {{range $i, $e := .Table.Columns}}{{if not (eq $e.Name $pk.Name) }}
                     {
+                      "label": "{{LineString $e.Comment}}",
                       "type": "input-text",
-                      "name": "{{$e.Name}}",
-                      "label": "{{LineString $e.Comment}}"
+                      "name": "{{$e.Name}}"
                     }{{if lt (Add $i 1) $colLen}},{{end}}{{end}}
                     {{end}}
                   ]
