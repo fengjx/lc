@@ -1,0 +1,32 @@
+package dao
+{{$ObjName := GonicCase .Table.Name}}
+{{$VarObjName := FirstLower $ObjName}}
+import (
+	"reflect"
+
+    "github.com/fengjx/daox"
+
+    "github.com/fengjx/glca/integration/db"
+    "github.com/fengjx/glca/logic/{{.TableVar.module}}/internal/data/entity"
+)
+
+var {{$ObjName}}Dao *{{$VarObjName}}Dao
+
+func init() {
+	{{$ObjName}}Dao = new{{$ObjName}}Dao()
+}
+
+type {{$VarObjName}}Dao struct {
+	*daox.Dao
+}
+
+func new{{$ObjName}}Dao() *{{$VarObjName}}Dao {
+    inst := &{{$VarObjName}}Dao{}
+    inst.Dao = daox.NewDAO(
+        db.GetDefaultDB(),
+        "{{.Table.Name}}",
+        "{{.Table.PrimaryKey.Name}}",
+        reflect.TypeOf(&entity.{{$ObjName}}{}),
+    )
+	return inst
+}

@@ -12,10 +12,6 @@ import (
 {{$TagName := .TagName}}
 {{$ObjName := GonicCase .Table.Name}}
 
-var {{$ObjName}}Columns = []string{
-{{range .Table.Columns}}    "{{.Name}}",
-{{end}}}
-
 // {{$ObjName}}M {{.Table.Comment}}
 type {{$ObjName}}M struct {
 {{range .Table.Columns}}    {{GonicCase .Name}} string

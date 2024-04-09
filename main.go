@@ -10,7 +10,7 @@ import (
 )
 
 const appName = "lc"
-const appAbout = "source code: https://github.com/fengjx/lc"
+const appAbout = "源码: https://github.com/fengjx/lc"
 const appDescription = "luchen cli tools"
 const appCopyright = "(c) 2024 by xd-fjx@qq.com All rights reserved."
 

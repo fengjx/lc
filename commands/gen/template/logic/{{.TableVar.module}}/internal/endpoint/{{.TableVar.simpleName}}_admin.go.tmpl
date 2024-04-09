@@ -1,0 +1,158 @@
+package endpoint
+{{$ObjName := GonicCase .Table.Name}}
+{{$VarObjName := FirstLower $ObjName}}
+{{$HandlerName := print $VarObjName "AdminHandler"}}
+{{$EndpointName := print $VarObjName "AdminEndpoint"}}
+import (
+	"context"
+	"strconv"
+
+	"github.com/fengjx/daox"
+	"github.com/fengjx/go-halo/utils"
+	"github.com/fengjx/luchen"
+	httptransport "github.com/go-kit/kit/transport/http"
+	"go.uber.org/zap"
+
+	"{{.Var.gomod}}/connom/types"
+	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/entity"
+	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/service"
+	"{{.Var.gomod}}/transport/http"
+)
+
+var {{.TableVar.simpleName}}Admin = {{$EndpointName}}{}
+
+type {{$HandlerName}} struct {
+}
+
+func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
+	router.Sub(http.AdminAPI+"/sys/{{.TableVar.simpleName}}", func(sub *luchen.HTTPServeMux) {
+		sub.Handle("/add", h.add())
+		sub.Handle("/update", h.update())
+		sub.Handle("/del", h.del())
+		sub.Handle("/batch-update", h.batchUpdate())
+		sub.Handle("/query", h.query())
+	})
+}
+
+func (h {{$HandlerName}}) query() *httptransport.Server {
+	return http.NewHandler(
+		{{.TableVar.simpleName}}Admin.makeQueryEndpoint(),
+		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h {{$HandlerName}}) add() *httptransport.Server {
+	return http.NewHandler(
+		{{.TableVar.simpleName}}Admin.makeAddEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h {{$HandlerName}}) update() *httptransport.Server {
+	return http.NewHandler(
+		{{.TableVar.simpleName}}Admin.makeUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h {{$HandlerName}}) del() *httptransport.Server {
+	return http.NewHandler(
+		{{.TableVar.simpleName}}Admin.makeDelEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.DelReq],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h {{$HandlerName}}) batchUpdate() *httptransport.Server {
+	return http.NewHandler(
+		{{.TableVar.simpleName}}Admin.makeBatchUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+type {{$EndpointName}} struct {
+}
+
+func (e {{$EndpointName}}) makeAddEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.{{$ObjName}})
+		id, err := service.{{$ObjName}}BaseSvc.Add(ctx, param)
+		if err != nil {
+			log.Error("add {{.Table.Name}} err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.AddRsp{
+			ID: id,
+		}
+		return
+	}
+}
+
+func (e {{$EndpointName}}) makeUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.{{$ObjName}})
+		ok, err := service.{{$ObjName}}BaseSvc.Update(ctx, param)
+		if err != nil {
+			log.Error("update {{.Table.Name}} err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e {{$EndpointName}}) makeDelEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		param := request.(*types.DelReq)
+		res := types.OKRsp{Success: true}
+		if param.IDs == "" {
+			return res, nil
+		}
+		ids := utils.SplitToSlice[int64](param.IDs, ",", func(item string) int64 {
+			i, _ := strconv.ParseInt(item, 10, 64)
+			return i
+		})
+		err = service.{{$ObjName}}BaseSvc.DeleteByIDs(ctx, ids)
+		if err != nil {
+			return nil, err
+		}
+		return
+	}
+}
+
+func (e {{$EndpointName}}) makeBatchUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*types.BatchUpdate)
+		ok, err := service.{{$ObjName}}BaseSvc.BatchUpdate(ctx, param)
+		if err != nil {
+			log.Error("batch update {{.Table.Name}} err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e {{$EndpointName}}) makeQueryEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		query := request.(*daox.QueryRecord)
+		pageVO, err := service.{{$ObjName}}BaseSvc.Query(ctx, query)
+		if err != nil {
+			log.Error("page query {{.Table.Name}} err", zap.Error(err))
+			return nil, err
+		}
+		return pageVO.ToAmisResp(), nil
+	}
+}

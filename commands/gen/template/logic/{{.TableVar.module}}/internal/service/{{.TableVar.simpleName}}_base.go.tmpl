@@ -1,0 +1,100 @@
+package service
+{{$ObjName := GonicCase .Table.Name}}
+{{$VarObjName := FirstLower $ObjName}}
+{{$ServiceName := print $VarObjName "BaseService"}}
+{{$ServiceVarName := print $ObjName "BaseSvc"}}
+import (
+	"context"
+
+	"github.com/fengjx/daox"
+	"github.com/fengjx/daox/sqlbuilder/ql"
+	"github.com/fengjx/go-halo/json"
+	"github.com/fengjx/luchen"
+	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
+
+	"{{.Var.gomod}}/connom/types"
+	"{{.Var.gomod}}/integration/db"
+	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/dao"
+	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/entity"
+	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/meta"
+)
+
+var {{$ServiceVarName}} = &{{$ServiceName}}{}
+
+type {{$ServiceName}} struct {
+}
+
+// Query 分页查询
+func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.{{$ObjName}}], error) {
+	log := luchen.Logger(ctx)
+	readDB := dao.{{$ObjName}}Dao.GetReadDB()
+	query.TableName = meta.{{$ObjName}}Meta.TableName()
+	list, page, err := daox.Find[entity.{{$ObjName}}](ctx, readDB, *query)
+	if err != nil {
+		log.Error("page query {{.Table.Name}} err", zap.Any("query", json.ToJsonDelay(query)), zap.Error(err))
+		return nil, err
+	}
+	pageVO := &types.PageVO[entity.{{$ObjName}}]{
+		List:    list,
+		Offset:  page.Offset,
+		Limit:   page.Limit,
+		Count:   page.Count,
+		HasNext: page.HasNext,
+	}
+	return pageVO, nil
+}
+
+// Add 新增记录
+func (svc {{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) (int64, error) {
+	return dao.{{$ObjName}}Dao.SaveContext(ctx, model,
+		meta.{{$ObjName}}Meta.Ctime,
+		meta.{{$ObjName}}Meta.Utime,
+	)
+}
+
+// Update 更新记录
+func (svc {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
+	return dao.{{$ObjName}}Dao.UpdateContext(ctx, model,
+		meta.{{$ObjName}}Meta.PrimaryKey(),
+		meta.{{$ObjName}}Meta.Ctime,
+		meta.{{$ObjName}}Meta.Utime,
+	)
+}
+
+// BatchUpdate 批量更新
+func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
+	for _, row := range param.Rows {
+		var id any
+		attr := map[string]any{}
+		for k, v := range row {
+			if k == meta.{{$ObjName}}Meta.PrimaryKey() {
+				id = v
+				continue
+			}
+			attr[k] = v
+		}
+		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx *sqlx.Tx) error {
+			_, err := dao.{{$ObjName}}Dao.UpdateFieldTxContext(txCtx, tx, id, attr)
+			return err
+		})
+		if err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+// DeleteByIDs 批量更新
+func (svc {{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
+	log := luchen.Logger(ctx).With(zap.Any("ids", ids))
+	_, err := dao.{{$ObjName}}Dao.DeleteByCondContext(ctx, ql.C().And(
+		meta.{{$ObjName}}Meta.IdIn(ids...),
+	))
+	if err != nil {
+		log.Error("delete {{.Table.Name}} err", zap.Error(err))
+		return err
+	}
+	log.Info("delete {{.Table.Name}} success")
+	return nil
+}
