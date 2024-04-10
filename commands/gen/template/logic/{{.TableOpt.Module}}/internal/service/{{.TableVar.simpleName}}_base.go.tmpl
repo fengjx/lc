@@ -15,9 +15,9 @@ import (
 
 	"{{.Var.gomod}}/connom/types"
 	"{{.Var.gomod}}/integration/db"
-	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/dao"
-	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/entity"
-	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/meta"
+	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/dao"
+	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
+	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
 var {{$ServiceVarName}} = &{{$ServiceName}}{}

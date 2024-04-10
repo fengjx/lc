@@ -1,9 +1,9 @@
 {{ $colLen := (len .Table.Columns) }}
 {{ $pk := .Table.PrimaryKey }}
-{{ $adminPathPrefix := print "admin/" .TableVar.module "/" .TableVar.simpleName}}
+{{ $adminPathPrefix := print "admin/" .TableOpt.Module "/" .TableOpt.SimpleName}}
 {
   "type": "page",
-  "name": "{{.TableVar.module}}-{{.TableVar.simpleName}}",
+  "name": "{{.TableOpt.Module}}-{{.TableOpt.SimpleName}}",
   "body": [
     {
       "type": "crud",

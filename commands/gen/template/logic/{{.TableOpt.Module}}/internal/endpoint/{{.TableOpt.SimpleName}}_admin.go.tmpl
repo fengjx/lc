@@ -14,18 +14,18 @@ import (
 	"go.uber.org/zap"
 
 	"{{.Var.gomod}}/connom/types"
-	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/data/entity"
-	"{{.Var.gomod}}/logic/{{.TableVar.module}}/internal/service"
+	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
+	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/service"
 	"{{.Var.gomod}}/transport/http"
 )
 
-var {{.TableVar.simpleName}}Admin = {{$EndpointName}}{}
+var {{.TableOpt.SimpleName}}Admin = {{$EndpointName}}{}
 
 type {{$HandlerName}} struct {
 }
 
 func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
-	router.Sub(http.AdminAPI+"/sys/{{.TableVar.simpleName}}", func(sub *luchen.HTTPServeMux) {
+	router.Sub(http.AdminAPI+"/sys/{{.TableOpt.SimpleName}}", func(sub *luchen.HTTPServeMux) {
 		sub.Handle("/add", h.add())
 		sub.Handle("/update", h.update())
 		sub.Handle("/del", h.del())
@@ -36,7 +36,7 @@ func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
 
 func (h {{$HandlerName}}) query() *httptransport.Server {
 	return http.NewHandler(
-		{{.TableVar.simpleName}}Admin.makeQueryEndpoint(),
+		{{.TableOpt.SimpleName}}Admin.makeQueryEndpoint(),
 		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -44,7 +44,7 @@ func (h {{$HandlerName}}) query() *httptransport.Server {
 
 func (h {{$HandlerName}}) add() *httptransport.Server {
 	return http.NewHandler(
-		{{.TableVar.simpleName}}Admin.makeAddEndpoint(),
+		{{.TableOpt.SimpleName}}Admin.makeAddEndpoint(),
 		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -52,7 +52,7 @@ func (h {{$HandlerName}}) add() *httptransport.Server {
 
 func (h {{$HandlerName}}) update() *httptransport.Server {
 	return http.NewHandler(
-		{{.TableVar.simpleName}}Admin.makeUpdateEndpoint(),
+		{{.TableOpt.SimpleName}}Admin.makeUpdateEndpoint(),
 		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -60,7 +60,7 @@ func (h {{$HandlerName}}) update() *httptransport.Server {
 
 func (h {{$HandlerName}}) del() *httptransport.Server {
 	return http.NewHandler(
-		{{.TableVar.simpleName}}Admin.makeDelEndpoint(),
+		{{.TableOpt.SimpleName}}Admin.makeDelEndpoint(),
 		luchen.DecodeHTTPJSONRequest[types.DelReq],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -68,7 +68,7 @@ func (h {{$HandlerName}}) del() *httptransport.Server {
 
 func (h {{$HandlerName}}) batchUpdate() *httptransport.Server {
 	return http.NewHandler(
-		{{.TableVar.simpleName}}Admin.makeBatchUpdateEndpoint(),
+		{{.TableOpt.SimpleName}}Admin.makeBatchUpdateEndpoint(),
 		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)

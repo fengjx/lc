@@ -66,7 +66,7 @@ func action(ctx *cli.Context) error {
 	}
 	for tableName := range config.Target.Tables {
 		table := loadTableMeta(db, dsnCfg.DBName, tableName)
-		fmt.Println(table.Name, table.Comment)
+		fmt.Printf("[%s %s]\r\n", table.Name, table.Comment)
 		newGen(config, table).Gen()
 	}
 	return nil
@@ -172,7 +172,7 @@ func newGen(config *Config, table *Table) *gen {
 		"Var":      config.Target.Custom.Var,
 		"TagName":  config.Target.Custom.TagName,
 		"Table":    table,
-		"TableVar": config.Target.Tables[table.Name],
+		"TableOpt": config.Target.Tables[table.Name],
 	}
 	outDir := filepath.Join(config.Target.Custom.OutDir)
 	funcMap := template.FuncMap{

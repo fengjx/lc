@@ -2,3 +2,4 @@
 .vscode
 out
 .dist
+t/gen/config-local.yml

@@ -13,13 +13,13 @@ target:
   tables: # 数据库表  table_name: {} 自定义表配置
     sys_user:
       module: sys
-      simpleName: user
+      simple-name: user
     sys_config:
       module: sys
-      simpleName: config
+      simple-name: config
     sys_dict:
       module: sys
-      simpleName: dict
+      simple-name: dict
     sys_menu:
       module: sys
-      simpleName: menu
+      simple-name: menu
