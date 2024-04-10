@@ -1,16 +1,14 @@
 package gen
 
 import (
-	"bytes"
+	"context"
 	"embed"
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
@@ -20,6 +18,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/fengjx/lc/commands/gen/internal/types"
+	"github.com/fengjx/lc/pkg/filegen"
 	"github.com/fengjx/lc/pkg/kit"
 )
 
@@ -68,7 +67,7 @@ func action(ctx *cli.Context) error {
 	for tableName := range config.Target.Tables {
 		table := loadTableMeta(db, dsnCfg.DBName, tableName)
 		fmt.Println(table.Name, table.Comment)
-		newGen(config, table).genFile()
+		newGen(config, table).Gen()
 	}
 	return nil
 }
@@ -158,20 +157,16 @@ func loadColumnMeta(db *sqlx.DB, dbName, tableName string) ([]Column, Column) {
 }
 
 type gen struct {
-	config      *Config
-	table       *Table
-	baseTmplDir string
-	outDir      string
-	isEmbed     bool
-	attr        map[string]any
+	*filegen.FileGen
 }
 
 func newGen(config *Config, table *Table) *gen {
 	tmplDir := "template"
-	isEmbed := true
+	var eFS *embed.FS
 	if config.Target.Custom.TemplateDir != "" {
 		tmplDir = config.Target.Custom.TemplateDir
-		isEmbed = false
+	} else {
+		eFS = &embedFS
 	}
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,
@@ -180,111 +175,6 @@ func newGen(config *Config, table *Table) *gen {
 		"TableVar": config.Target.Tables[table.Name],
 	}
 	outDir := filepath.Join(config.Target.Custom.OutDir)
-	return &gen{
-		config:      config,
-		table:       table,
-		isEmbed:     isEmbed,
-		baseTmplDir: tmplDir,
-		outDir:      outDir,
-		attr:        attr,
-	}
-}
-
-func (g *gen) genFile() {
-	entries, err := readDir(g.baseTmplDir, g.isEmbed)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	g.render("", entries)
-}
-
-// render 递归生成文件
-func (g *gen) render(parent string, entries []os.DirEntry) {
-	if parent == "" {
-		parent = g.baseTmplDir
-	}
-	adminDirs := []string{"static", "endpoint"}
-	for _, entry := range entries {
-		if !g.config.Target.Custom.UseAdmin && kit.ContainsString(adminDirs, entry.Name()) {
-			continue
-		}
-		path := filepath.Join(parent, entry.Name())
-		if entry.IsDir() {
-			children, err := readDir(filepath.Join(parent, entry.Name()), g.isEmbed)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-			g.render(path, children)
-			continue
-		}
-		targetDirBys, err := parse(strings.ReplaceAll(parent, g.baseTmplDir, ""), g.attr)
-		if err != nil {
-			log.Fatal(err)
-		}
-		targetDir := filepath.Join(g.outDir, string(targetDirBys))
-		err = os.MkdirAll(targetDir, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-		suffix := ""
-		override := false
-		re := false
-		if strings.HasSuffix(entry.Name(), ".override.tmpl") {
-			// 覆盖之前的文件
-			suffix = ".override.tmpl"
-			override = true
-		} else if strings.HasSuffix(entry.Name(), ".re.tmpl") {
-			// 重新生成一个文件，加上时间戳
-			suffix = ".re.tmpl"
-			re = true
-		} else if strings.HasSuffix(entry.Name(), ".tmpl") {
-			// 保留原来的文件
-			suffix = ".tmpl"
-		}
-		if suffix == "" {
-			targetFile := filepath.Join(targetDir, entry.Name())
-			fmt.Println(targetFile)
-			// 其他不需要渲染的文件直接复制
-			err = kit.CopyFile(path, targetFile)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-			continue
-		}
-		filenameBys, err := parse(strings.ReplaceAll(entry.Name(), suffix, ""), g.attr)
-		if err != nil {
-			log.Fatal(err)
-		}
-		targetFile := filepath.Join(targetDir, string(filenameBys))
-		if _, err = os.Stat(targetFile); !override && err == nil {
-			if !re {
-				continue
-			}
-			targetFile = fmt.Sprintf("%s.%d", targetFile, time.Now().Unix())
-		}
-		fmt.Println(targetFile)
-		bs, err := readFile(path, g.isEmbed)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		newbytes, err := parse(string(bs), g.attr)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		err = os.WriteFile(targetFile, newbytes, 0600)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-	}
-}
-
-func parse(text string, attr map[string]interface{}) ([]byte, error) {
 	funcMap := template.FuncMap{
 		"FirstUpper":           kit.FirstUpper,
 		"FirstLower":           kit.FirstLower,
@@ -297,15 +187,24 @@ func parse(text string, attr map[string]interface{}) ([]byte, error) {
 		"Sub":                  kit.Sub,
 		"SQLType2GoTypeString": types.SQLType2GoTypeString,
 	}
-	t, err := template.New("").Funcs(funcMap).Parse(text)
-	if err != nil {
-		return nil, err
+	fg := &filegen.FileGen{
+		EmbedFS:     eFS,
+		BaseTmplDir: tmplDir,
+		OutDir:      outDir,
+		Attr:        attr,
+		FuncMap:     funcMap,
 	}
-	buf := bytes.NewBufferString("")
-	if err = t.Execute(buf, attr); err != nil {
-		return nil, err
+	if !config.Target.Custom.UseAdmin {
+		// 排除admin目录
+		fg.EntryFilter = func(ctx context.Context, entry os.DirEntry) bool {
+			adminDirs := []string{"static", "endpoint"}
+			return !kit.ContainsString(adminDirs, entry.Name())
+		}
 	}
-	return buf.Bytes(), nil
+	g := &gen{
+		FileGen: fg,
+	}
+	return g
 }
 
 func goImports(cols []Column) []string {
@@ -320,18 +219,4 @@ func goImports(cols []Column) []string {
 		}
 	}
 	return results
-}
-
-func readDir(dir string, isEmbed bool) ([]fs.DirEntry, error) {
-	if isEmbed {
-		return embedFS.ReadDir(dir)
-	}
-	return os.ReadDir(dir)
-}
-
-func readFile(filepath string, isEmbed bool) ([]byte, error) {
-	if isEmbed {
-		return embedFS.ReadFile(filepath)
-	}
-	return os.ReadFile(filepath)
 }
