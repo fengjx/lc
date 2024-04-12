@@ -1,4 +1,4 @@
-package gen
+package migrate
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 
-	"github.com/fengjx/lc/commands/gen/internal/types"
+	"github.com/fengjx/lc/commands/migrate/internal/types"
 	"github.com/fengjx/lc/pkg/filegen"
 	"github.com/fengjx/lc/pkg/kit"
 )
@@ -26,7 +26,7 @@ import (
 var embedFS embed.FS
 
 var Command = &cli.Command{
-	Name:   "gen",
+	Name:   "migrate",
 	Usage:  "根据数据库表生成模板代码，模板可以自定义",
 	Flags:  flags,
 	Action: action,
@@ -34,14 +34,14 @@ var Command = &cli.Command{
 
 var flags = []cli.Flag{
 	&cli.StringFlag{
-		Name:     "f",
+		Name:     "c",
 		Usage:    "配置文件路径",
 		Required: true,
 	},
 }
 
 func action(ctx *cli.Context) error {
-	configFile := ctx.String("f")
+	configFile := ctx.String("c")
 	bs, err := os.ReadFile(configFile)
 	if err != nil {
 		return err

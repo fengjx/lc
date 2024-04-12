@@ -1,4 +1,4 @@
-package gen
+package migrate
 
 // Config config file
 type Config struct {

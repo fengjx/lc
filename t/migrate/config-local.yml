@@ -1,0 +1,25 @@
+ds: # 数据库连接
+  type: mysql
+  dsn: root:1234@tcp(192.168.1.200:3306)/lca?charset=utf8mb4
+target:
+  custom:  # 自定义配置
+    tag-name: json # 生成 entity tag
+    # template-dir: ./commands/gen/template
+    out-dir: ./out # 代码输出目录
+    use-admin: true
+    var: # 自定义变量（key-value）
+      foo: bar
+      gomod: github.com/fengjx/demo
+  tables: # 数据库表  table_name: {} 自定义表配置
+    sys_user:
+      module: sys
+      simple-name: user
+    sys_config:
+      module: sys
+      simple-name: config
+    sys_dict:
+      module: sys
+      simple-name: dict
+    sys_menu:
+      module: sys
+      simple-name: menu
