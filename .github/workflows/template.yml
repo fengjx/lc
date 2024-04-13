@@ -1,4 +1,4 @@
-name: template
+name: release template
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'template-*'
 
 jobs:
-  goreleaser:
+  template:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
