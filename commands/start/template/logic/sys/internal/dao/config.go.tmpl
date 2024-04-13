@@ -1,0 +1,48 @@
+package dao
+
+import (
+	"context"
+	"reflect"
+
+	"github.com/fengjx/daox"
+	"github.com/fengjx/daox/sqlbuilder/ql"
+
+	"{{.gomod}}/integration/db"
+	"{{.gomod}}/logic/sys/internal/data/entity"
+	"{{.gomod}}/logic/sys/internal/data/enum"
+	"{{.gomod}}/logic/sys/internal/data/meta"
+)
+
+var SysConfigDao *sysConfigDao
+
+func init() {
+	SysConfigDao = newSysConfigDao()
+}
+
+type sysConfigDao struct {
+	*daox.Dao
+}
+
+func newSysConfigDao() *sysConfigDao {
+	inst := &sysConfigDao{}
+	inst.Dao = daox.NewDAO(
+		db.GetDefaultDB(),
+		"sys_config",
+		"id",
+		reflect.TypeOf(&entity.SysConfig{}),
+	)
+	return inst
+}
+
+// ListAll 查询所有生效配置
+func (dao sysConfigDao) ListAll(ctx context.Context) ([]*entity.SysConfig, error) {
+	selector := dao.Selector().Where(ql.C().And(
+		ql.Col(meta.SysUserMeta.Status).EQ(enum.ConfigStatusNormal),
+	))
+	var list []*entity.SysConfig
+	err := dao.SelectContext(ctx, &list, selector)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}

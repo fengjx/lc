@@ -1,0 +1,177 @@
+package endpoint
+
+import (
+	"context"
+	"strconv"
+
+	"github.com/fengjx/daox"
+	"github.com/fengjx/go-halo/utils"
+	"github.com/fengjx/luchen"
+	"go.uber.org/zap"
+
+	"{{.gomod}}/connom/types"
+	"{{.gomod}}/logic/sys/internal/data/entity"
+	"{{.gomod}}/logic/sys/internal/protocol"
+	"{{.gomod}}/logic/sys/internal/service"
+	"{{.gomod}}/transport/http"
+)
+
+var userAdmin = userAdminEndpoint{}
+
+type userAdminHandler struct {
+}
+
+func (h userAdminHandler) Bind(router *luchen.HTTPServeMux) {
+	router.Sub(http.AdminAPI+"/sys/user", func(sub *luchen.HTTPServeMux) {
+		sub.Handle("/add", h.add())
+		sub.Handle("/update", h.update())
+		sub.Handle("/update-pwd", h.updatePwd())
+		sub.Handle("/del", h.del())
+		sub.Handle("/batch-update", h.batchUpdate())
+		sub.Handle("/query", h.query())
+	})
+}
+
+func (h userAdminHandler) query() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeQueryEndpoint(),
+		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h userAdminHandler) add() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeAddEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.SysUser],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h userAdminHandler) update() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.SysUser],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h userAdminHandler) del() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeDelEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.DelReq],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h userAdminHandler) batchUpdate() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeBatchUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h userAdminHandler) updatePwd() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		userAdmin.makeUpdatePwdEndpoint(),
+		luchen.DecodeHTTPJSONRequest[protocol.UpdateUserPwdReq],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+type userAdminEndpoint struct {
+}
+
+func (e userAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.SysUser)
+		id, err := service.SysUserBaseSvc.Add(ctx, param)
+		if err != nil {
+			log.Error("add user err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.AddRsp{
+			ID: id,
+		}
+		return
+	}
+}
+
+func (e userAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.SysUser)
+		ok, err := service.SysUserBaseSvc.Update(ctx, param)
+		if err != nil {
+			log.Error("update user err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e userAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		param := request.(*types.DelReq)
+		res := types.OKRsp{Success: true}
+		if param.IDs == "" {
+			return res, nil
+		}
+		ids := utils.SplitToSlice[int64](param.IDs, ",", func(item string) int64 {
+			i, _ := strconv.ParseInt(item, 10, 64)
+			return i
+		})
+		err = service.SysUserBaseSvc.DeleteByIDs(ctx, ids)
+		if err != nil {
+			return nil, err
+		}
+		return
+	}
+}
+
+func (e userAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*types.BatchUpdate)
+		ok, err := service.SysUserBaseSvc.BatchUpdate(ctx, param)
+		if err != nil {
+			log.Error("batch update user err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e userAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		query := request.(*daox.QueryRecord)
+		pageVO, err := service.SysUserBaseSvc.Query(ctx, query)
+		if err != nil {
+			log.Error("page query user err", zap.Error(err))
+			return nil, err
+		}
+		return pageVO.ToAmisResp(), nil
+	}
+}
+
+func (e userAdminEndpoint) makeUpdatePwdEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*protocol.UpdateUserPwdReq)
+		err = service.SysUserBaseSvc.UpdatePwd(ctx, req.ID, req.Pwd)
+		if err != nil {
+			return nil, err
+		}
+		return types.OKRsp{
+			Success: true,
+		}, nil
+	}
+}

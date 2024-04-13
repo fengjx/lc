@@ -5,7 +5,7 @@ target:
   custom:  # 自定义配置
     tag-name: json # 生成 entity tag
     # template-dir: ./commands/gen/template
-    out-dir: ./out # 代码输出目录
+    out-dir: ./out/migrate # 代码输出目录
     use-admin: true
     var: # 自定义变量（key-value）
       foo: bar

@@ -1,0 +1,253 @@
+package endpoint
+
+import (
+	"context"
+	"strconv"
+
+	"github.com/fengjx/daox"
+	"github.com/fengjx/go-halo/utils"
+	"github.com/fengjx/luchen"
+	"go.uber.org/zap"
+
+	"{{.gomod}}/connom/types"
+	"{{.gomod}}/logic/sys/internal/data/dto"
+	"{{.gomod}}/logic/sys/internal/data/entity"
+	"{{.gomod}}/logic/sys/internal/data/enum"
+	"{{.gomod}}/logic/sys/internal/service"
+	"{{.gomod}}/transport/http"
+)
+
+var menuAdmin = sysMenuAdminEndpoint{}
+
+type sysMenuAdminHandler struct {
+}
+
+func (h sysMenuAdminHandler) Bind(router *luchen.HTTPServeMux) {
+	router.Sub(http.AdminAPI+"/sys/menu", func(sub *luchen.HTTPServeMux) {
+		sub.Handle("/add", h.add())
+		sub.Handle("/update", h.update())
+		sub.Handle("/del", h.del())
+		sub.Handle("/batch-update", h.batchUpdate())
+		sub.Handle("/query", h.query())
+		sub.Handle("/options", h.options())
+		sub.Handle("/fetch", h.fetch())
+	})
+}
+
+func (h sysMenuAdminHandler) query() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeQueryEndpoint(),
+		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) add() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeAddEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.SysMenu],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) update() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[entity.SysMenu],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) del() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeDelEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.DelReq],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) batchUpdate() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeBatchUpdateEndpoint(),
+		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) options() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeOptionsEndpoint(),
+		luchen.NopHTTPRequestDecoder,
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+func (h sysMenuAdminHandler) fetch() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		menuAdmin.makeFetchEndpoint(),
+		luchen.NopHTTPRequestDecoder,
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+type sysMenuAdminEndpoint struct {
+}
+
+func (e sysMenuAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.SysMenu)
+		id, err := service.SysMenuBaseSvc.Add(ctx, param)
+		if err != nil {
+			log.Error("add sys_menu err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.AddRsp{
+			ID: id,
+		}
+		return
+	}
+}
+
+func (e sysMenuAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*entity.SysMenu)
+		ok, err := service.SysMenuBaseSvc.Update(ctx, param)
+		if err != nil {
+			log.Error("update sys_menu err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e sysMenuAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		param := request.(*types.DelReq)
+		res := types.OKRsp{Success: true}
+		if param.IDs == "" {
+			return res, nil
+		}
+		ids := utils.SplitToSlice[int64](param.IDs, ",", func(item string) int64 {
+			i, _ := strconv.ParseInt(item, 10, 64)
+			return i
+		})
+		err = service.SysMenuBaseSvc.DeleteByIDs(ctx, ids)
+		if err != nil {
+			return nil, err
+		}
+		return
+	}
+}
+
+func (e sysMenuAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		param := request.(*types.BatchUpdate)
+		ok, err := service.SysMenuBaseSvc.BatchUpdate(ctx, param)
+		if err != nil {
+			log.Error("batch update sys_menu err", zap.Any("param", param), zap.Error(err))
+			return nil, err
+		}
+		response = types.OKRsp{
+			Success: ok,
+		}
+		return
+	}
+}
+
+func (e sysMenuAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		query := request.(*daox.QueryRecord)
+		pageVO, err := service.SysMenuBaseSvc.Query(ctx, query)
+		if err != nil {
+			log.Error("page query sys_menu err", zap.Error(err))
+			return nil, err
+		}
+		return pageVO.ToAmisResp(), nil
+	}
+}
+
+func (e sysMenuAdminEndpoint) buildOption(menus []*dto.MenuDTO) []*types.Option {
+	if len(menus) == 0 {
+		return nil
+	}
+	var options []*types.Option
+	for _, menu := range menus {
+		opt := &types.Option{
+			Label:    menu.Name,
+			Value:    menu.ID,
+			Children: e.buildOption(menu.Children),
+		}
+		options = append(options, opt)
+	}
+	return options
+}
+
+func (e sysMenuAdminEndpoint) makeOptionsEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		treeList, err := service.SysMenuBaseSvc.TreeList(ctx, []enum.MenuStatus{
+			enum.MenuStatusNormal,
+			enum.MenuStatusDisable,
+		})
+		if err != nil {
+			log.Error("recursive query menus err", zap.Error(err))
+			return nil, err
+		}
+		options := []*types.Option{
+			{
+				Label:    "根目录",
+				Value:    0,
+				Children: e.buildOption(treeList),
+			},
+		}
+		rsp := types.SelectResp{
+			Options: options,
+		}
+		return rsp, nil
+	}
+}
+
+func (e sysMenuAdminEndpoint) buildMenu(menus []*dto.MenuDTO) []*types.Menu {
+	if len(menus) == 0 {
+		return nil
+	}
+	var options []*types.Menu
+	for _, menu := range menus {
+		opt := &types.Menu{
+			Label:     menu.Name,
+			Icon:      menu.Icon,
+			URL:       menu.Path,
+			Redirect:  menu.Redirect,
+			SchemaAPI: menu.SchemaAPI,
+			Visible:   menu.Visible == 1,
+			Children:  e.buildMenu(menu.Children),
+		}
+		options = append(options, opt)
+	}
+	return options
+}
+
+func (e sysMenuAdminEndpoint) makeFetchEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		log := luchen.Logger(ctx)
+		treeList, err := service.SysMenuBaseSvc.TreeList(ctx, []enum.MenuStatus{
+			enum.MenuStatusNormal,
+		})
+		if err != nil {
+			log.Error("recursive query menus err", zap.Error(err))
+			return nil, err
+		}
+		pages := e.buildMenu(treeList)
+		rsp := types.App{
+			Pages: pages,
+		}
+		return rsp, nil
+	}
+}

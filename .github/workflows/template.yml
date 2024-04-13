@@ -1,0 +1,29 @@
+name: template
+
+on:
+  push:
+    tags:
+      - 'template-*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Unshallow repo
+        run: git fetch --prune --unshallow
+      - name: build template zip
+        run: |
+             mkdir -p .dist/template
+             cp -r commands/start/template .dist/template/start-template
+             cd .dist/template
+             zip -r start-template.zip start-template -x ".git/*" ".github/*"
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            .dist/template
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

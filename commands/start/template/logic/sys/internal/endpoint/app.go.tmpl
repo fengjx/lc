@@ -1,0 +1,47 @@
+package endpoint
+
+import (
+	"context"
+
+	"github.com/fengjx/luchen"
+
+	"{{.gomod}}/logic/sys/internal/data/consts"
+	"{{.gomod}}/logic/sys/internal/protocol"
+	"{{.gomod}}/logic/sys/internal/service"
+	"{{.gomod}}/transport/http"
+)
+
+var (
+	config = configEndpoint{}
+)
+
+type configHandler struct {
+}
+
+func (h configHandler) Bind(router *luchen.HTTPServeMux) {
+	router.Handle(http.OpenAPI+"/app/data", h.fetchData())
+}
+
+func (h configHandler) fetchData() *luchen.HTTPTransportServer {
+	return http.NewHandler(
+		config.MakeFetchDataEndpoint(),
+		luchen.NopHTTPRequestDecoder,
+		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
+	)
+}
+
+type configEndpoint struct {
+}
+
+func (e configEndpoint) MakeFetchDataEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		appConfig := service.ConfigSvc.ScopeConfig(
+			consts.ScopeApp,
+		)
+		dict := service.DictSvc.GetGroupDict()
+		return protocol.AppDataResp{
+			Config: appConfig,
+			Dict:   dict,
+		}, nil
+	}
+}

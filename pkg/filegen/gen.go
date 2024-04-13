@@ -5,6 +5,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -12,8 +13,6 @@ import (
 	"strings"
 	"text/template"
 	"time"
-
-	"github.com/fengjx/lc/pkg/kit"
 )
 
 // EntryFilter 模板文件过滤
@@ -95,7 +94,7 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			targetFile := filepath.Join(targetDir, entry.Name())
 			fmt.Println(targetFile)
 			// 其他不需要渲染的文件直接复制
-			err = kit.CopyFile(path, targetFile)
+			err = g.copyFile(path, targetFile)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
@@ -156,4 +155,30 @@ func (g *FileGen) readFile(filepath string) ([]byte, error) {
 		return g.EmbedFS.ReadFile(filepath)
 	}
 	return os.ReadFile(filepath)
+}
+
+func (g *FileGen) copyFile(src, dist string) (err error) {
+	var in fs.File
+	if g.EmbedFS != nil {
+		in, err = g.EmbedFS.Open(src)
+		if err != nil {
+			return
+		}
+	} else {
+		in, err = os.Open(src)
+		if err != nil {
+			return
+		}
+	}
+	defer in.Close()
+	out, err := os.Create(dist)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,0 +1,21 @@
+package syspub
+
+import (
+	"context"
+
+	"github.com/fengjx/luchen"
+)
+
+var AppAPI appAPI
+
+type appAPI interface {
+	Init(ctx context.Context) error
+}
+
+func SetAppAPI(impl appAPI) {
+	if AppAPI != nil {
+		luchen.RootLogger().Warn("set AppAPI impl duplicate")
+		return
+	}
+	AppAPI = impl
+}

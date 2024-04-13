@@ -6,8 +6,8 @@ import (
 
     "github.com/fengjx/daox"
 
-    "github.com/fengjx/glca/integration/db"
-    "github.com/fengjx/glca/logic/{{.TableOpt.Module}}/internal/data/entity"
+    "{{.Var.gomod}}/integration/db"
+    "{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
 )
 
 var {{$ObjName}}Dao *{{$VarObjName}}Dao

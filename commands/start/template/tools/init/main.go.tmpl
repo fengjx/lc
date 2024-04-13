@@ -1,0 +1,20 @@
+package main
+
+import (
+	"context"
+
+	"github.com/fengjx/luchen"
+	"go.uber.org/zap"
+
+	"{{.gomod}}/logic/sys"
+	"{{.gomod}}/logic/sys/syspub"
+)
+
+func main() {
+	ctx := context.Background()
+	sys.InitWithTools(ctx)
+	err := syspub.AppAPI.Init(ctx)
+	if err != nil {
+		luchen.RootLogger().Error("install err", zap.Error(err))
+	}
+}

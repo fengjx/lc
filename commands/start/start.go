@@ -1,1 +1,77 @@
 package start
+
+import (
+	"embed"
+	"fmt"
+	"path/filepath"
+	"text/template"
+
+	"github.com/urfave/cli/v2"
+
+	"github.com/fengjx/lc/pkg/filegen"
+	"github.com/fengjx/lc/pkg/kit"
+)
+
+//go:embed template/*
+var embedFS embed.FS
+
+var Command = &cli.Command{
+	Name:   "start",
+	Usage:  "开始一个新项目",
+	Flags:  flags,
+	Action: action,
+}
+
+var flags = []cli.Flag{
+	&cli.StringFlag{
+		Name:     "gomod",
+		Aliases:  []string{"m"},
+		Usage:    "指定 go.mod module",
+		Required: true,
+	},
+	&cli.StringFlag{
+		Name:    "out",
+		Aliases: []string{"o"},
+		Usage:   "文件生成目录，默认从 gomod 读取",
+	},
+}
+
+func action(ctx *cli.Context) error {
+	mod := ctx.String("m")
+	out := ctx.String("o")
+	proj := filepath.Base(mod)
+	if out == "" {
+		out = proj
+	}
+	attr := map[string]any{
+		"gomod": mod,
+		"proj":  proj,
+	}
+	funcMap := template.FuncMap{
+		"FirstUpper":  kit.FirstUpper,
+		"FirstLower":  kit.FirstLower,
+		"SnakeCase":   kit.SnakeCase,
+		"TitleCase":   kit.TitleCase,
+		"GonicCase":   kit.GonicCase,
+		"LineString":  kit.LineString,
+		"IsLastIndex": kit.IsLastIndex,
+		"Add":         kit.Add,
+		"Sub":         kit.Sub,
+	}
+	tmplDir := "template"
+	fg := &filegen.FileGen{
+		EmbedFS:     &embedFS,
+		BaseTmplDir: tmplDir,
+		OutDir:      out,
+		Attr:        attr,
+		FuncMap:     funcMap,
+	}
+	fg.Gen()
+	fmt.Println("项目创建完成，执行一下步骤启动服务")
+	fmt.Printf("1. cd %s \r\n", out)
+	fmt.Println("2. go mod tidy")
+	fmt.Println("3. 修改数据库配置 conf/app.yml")
+	fmt.Println("4. 初始化数据库 go run tools/init/main.go")
+	fmt.Println("5. 启动服务 go run main.go")
+	return nil
+}

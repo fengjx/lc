@@ -1,0 +1,23 @@
+ds:
+  type: mysql
+  dsn: root:1234@tcp(localhost:3306)/lca?charset=utf8mb4
+target:
+  custom:
+    tag-name: json
+    out-dir: ./
+    use-admin: true
+    var:
+      gomod: {{.gomod}}
+  tables:
+    sys_user:
+      module: sys
+      simpleName: user
+    sys_config:
+      module: sys
+      simpleName: config
+    sys_dict:
+      module: sys
+      simpleName: dict
+    sys_menu:
+      module: sys
+      simpleName: menu
