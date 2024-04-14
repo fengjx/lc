@@ -37,6 +37,7 @@ var flags = []cli.Flag{
 }
 
 func action(ctx *cli.Context) error {
+	//rctx := context.Background()
 	mod := ctx.String("m")
 	out := ctx.String("o")
 	proj := filepath.Base(mod)

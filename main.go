@@ -7,6 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/fengjx/lc/commands"
+	"github.com/fengjx/lc/common"
 )
 
 const appName = "lc"
@@ -22,6 +23,7 @@ var Metadata = map[string]interface{}{
 
 func main() {
 	app := cli.NewApp()
+	app.Version = common.Version
 	app.Usage = appAbout
 	app.Description = appDescription
 	app.Copyright = appCopyright

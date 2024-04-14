@@ -167,3 +167,7 @@ func (r *Response) IsError() bool {
 func (r *Response) FmtBody(model interface{}) error {
 	return json.Unmarshal(r.Body(), model)
 }
+
+func GetClient() *http.Client {
+	return cli
+}
