@@ -43,8 +43,8 @@ func downloadTemplate(ctx context.Context) (downloadFile string, err error) {
 	}
 	assertFilter := func(releases []*github.RepositoryRelease) (*github.ReleaseAsset, *github.RepositoryRelease) {
 		releases = lo.Filter(releases, func(item *github.RepositoryRelease, _ int) bool {
-			//// 过滤 rc 版本
-			if !useRC() && strings.Index(item.GetTagName(), "-rc") > 0 {
+			// 过滤非正式版本
+			if !usePre() && item.GetPrerelease() {
 				return false
 			}
 			// 只兼容 template-v1-* 版本
@@ -85,7 +85,8 @@ func getDownloadDir(paths ...string) string {
 	return filepath.Join(ps...)
 }
 
-func useRC() bool {
-	use := os.Getenv("USE_RC")
+// 是否使用非正式版本
+func usePre() bool {
+	use := os.Getenv("USE_PRE")
 	return lo.Contains([]string{"true", "1"}, strings.ToLower(use))
 }
