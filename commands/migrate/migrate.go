@@ -3,13 +3,13 @@ package migrate
 import (
 	"context"
 	"embed"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 
+	"github.com/fatih/color"
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +18,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/fengjx/lc/commands/migrate/internal/types"
+	"github.com/fengjx/lc/common"
 	"github.com/fengjx/lc/pkg/filegen"
 	"github.com/fengjx/lc/pkg/kit"
 )
@@ -51,7 +52,7 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 	if config.DS.Type != "mysql" {
-		fmt.Println("当前仅支持 mysql")
+		color.Red("当前仅支持 mysql")
 		return nil
 	}
 	dsnCfg, err := mysql.ParseDSN(config.DS.Dsn)
@@ -64,10 +65,29 @@ func action(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	debug := common.IsDebug()
+	rctx := context.Background()
+
+	var eFS *embed.FS
+	tmplDir := "template"
+	if debug {
+		eFS = &embedFS
+	} else if config.Target.Custom.TemplateDir != "" {
+		tmplDir = config.Target.Custom.TemplateDir
+	} else {
+		unzipDir, err := common.SyncTemplate(rctx)
+		if err != nil {
+			color.Red("同步模板文件失败，%s", err.Error())
+			panic(err)
+		}
+		tmplDir = filepath.Join(unzipDir, "template", "migrate")
+	}
+
 	for tableName := range config.Target.Tables {
 		table := loadTableMeta(db, dsnCfg.DBName, tableName)
-		fmt.Printf("[%s %s]\r\n", table.Name, table.Comment)
-		newGen(config, table).Gen()
+		color.Green("[%s %s]", table.Name, table.Comment)
+		newGen(tmplDir, eFS, config, table).Gen()
 	}
 	return nil
 }
@@ -160,14 +180,7 @@ type gen struct {
 	*filegen.FileGen
 }
 
-func newGen(config *Config, table *Table) *gen {
-	tmplDir := "template"
-	var eFS *embed.FS
-	if config.Target.Custom.TemplateDir != "" {
-		tmplDir = config.Target.Custom.TemplateDir
-	} else {
-		eFS = &embedFS
-	}
+func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,
 		"TagName":  config.Target.Custom.TagName,

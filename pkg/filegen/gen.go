@@ -13,6 +13,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 // EntryFilter 模板文件过滤
@@ -33,7 +35,7 @@ type FileGen struct {
 func (g *FileGen) Gen() {
 	entries, err := g.readDir(g.BaseTmplDir)
 	if err != nil {
-		fmt.Println(err.Error())
+		color.Red("读取模板目录失败：%s, 失败原因：%s", g.BaseTmplDir, err.Error())
 		return
 	}
 	g.render("", entries)
@@ -58,9 +60,10 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 		}
 		path := filepath.Join(parent, entry.Name())
 		if entry.IsDir() {
-			children, err := g.readDir(filepath.Join(parent, entry.Name()))
+			nextDir := filepath.Join(parent, entry.Name())
+			children, err := g.readDir(nextDir)
 			if err != nil {
-				fmt.Println(err.Error())
+				color.Red("读取目录文件失败：%s, 失败原因：%s", nextDir, err.Error())
 				return
 			}
 			g.render(path, children)
@@ -92,11 +95,11 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 		}
 		if suffix == "" {
 			targetFile := filepath.Join(targetDir, entry.Name())
-			fmt.Println(targetFile)
+			color.Yellow(targetFile)
 			// 其他不需要渲染的文件直接复制
 			err = g.copyFile(path, targetFile)
 			if err != nil {
-				fmt.Println(err.Error())
+				color.Red("复制文件失败：%s，失败原因：%s", targetFile, err.Error())
 				return
 			}
 			continue
@@ -112,20 +115,20 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			}
 			targetFile = fmt.Sprintf("%s.%d", targetFile, time.Now().Unix())
 		}
-		fmt.Println(targetFile)
+		color.Yellow(targetFile)
 		bs, err := g.readFile(path)
 		if err != nil {
-			fmt.Println(err.Error())
+			color.Red("读取文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
 		newbytes, err := g.parse(string(bs), g.Attr)
 		if err != nil {
-			fmt.Println(err.Error())
+			color.Red("解析模板文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
 		err = os.WriteFile(targetFile, newbytes, 0600)
 		if err != nil {
-			fmt.Println(err.Error())
+			color.Red("生成文件失败：%s，失败原因：%s", targetFile, err.Error())
 			return
 		}
 	}

@@ -3,4 +3,4 @@
 out
 .dist
 .lc
-t/gen/config-local.yml
+t/migrate/config-local.yml

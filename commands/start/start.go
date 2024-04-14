@@ -1,13 +1,15 @@
 package start
 
 import (
+	"context"
 	"embed"
-	"fmt"
 	"path/filepath"
 	"text/template"
 
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 
+	"github.com/fengjx/lc/common"
 	"github.com/fengjx/lc/pkg/filegen"
 	"github.com/fengjx/lc/pkg/kit"
 )
@@ -37,7 +39,8 @@ var flags = []cli.Flag{
 }
 
 func action(ctx *cli.Context) error {
-	//rctx := context.Background()
+	debug := common.IsDebug()
+	rctx := context.Background()
 	mod := ctx.String("m")
 	out := ctx.String("o")
 	proj := filepath.Base(mod)
@@ -59,20 +62,31 @@ func action(ctx *cli.Context) error {
 		"Add":         kit.Add,
 		"Sub":         kit.Sub,
 	}
+	var eFS *embed.FS
 	tmplDir := "template"
+	if debug {
+		eFS = &embedFS
+	} else {
+		unzipDir, err := common.SyncTemplate(rctx)
+		if err != nil {
+			color.Red("同步模板文件失败，%s", err.Error())
+			return err
+		}
+		tmplDir = filepath.Join(unzipDir, "template", "start")
+	}
 	fg := &filegen.FileGen{
-		EmbedFS:     &embedFS,
+		EmbedFS:     eFS,
 		BaseTmplDir: tmplDir,
 		OutDir:      out,
 		Attr:        attr,
 		FuncMap:     funcMap,
 	}
 	fg.Gen()
-	fmt.Println("项目创建完成，执行一下步骤启动服务")
-	fmt.Printf("1. cd %s \r\n", out)
-	fmt.Println("2. go mod tidy")
-	fmt.Println("3. 修改数据库配置 conf/app.yml")
-	fmt.Println("4. 初始化数据库 go run tools/init/main.go")
-	fmt.Println("5. 启动服务 go run main.go")
+	color.Green("项目创建完成，执行一下步骤启动服务")
+	color.Green("1. cd %s", out)
+	color.Green("2. go mod tidy")
+	color.Green("3. 修改数据库配置 conf/app.yml")
+	color.Green("4. 初始化数据库 go run tools/init/main.go")
+	color.Green("5. 启动服务 go run main.go")
 	return nil
 }

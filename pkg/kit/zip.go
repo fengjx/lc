@@ -33,7 +33,7 @@ func unzipFile(file *zip.File, dir string) error {
 		}
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
 		return err
 	}
 

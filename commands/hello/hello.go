@@ -1,8 +1,7 @@
 package hello
 
 import (
-	"fmt"
-
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,6 +23,6 @@ var flags = []cli.Flag{
 
 func action(ctx *cli.Context) error {
 	name := ctx.String("name")
-	fmt.Printf("hello %s\n", name)
+	color.Green("hello %s", name)
 	return nil
 }

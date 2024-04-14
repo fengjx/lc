@@ -17,4 +17,14 @@ go install https://github.com/fengjx/lc
 ## 说明
 
 
+### 生成项目脚手架
+
+
+
+```bash
+lc start -m github.com/fengjx/lca-hello
+```
+
+
+
 

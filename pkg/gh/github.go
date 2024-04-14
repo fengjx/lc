@@ -23,29 +23,33 @@ func GetRelease(ctx context.Context, owner, repo string, filter ReleaseFilter) (
 	return filter(releases), nil
 }
 
-type AssetFilter func([]*github.RepositoryRelease) *github.ReleaseAsset
+type AssetFilter func([]*github.RepositoryRelease) (asset *github.ReleaseAsset, release *github.RepositoryRelease)
 
 // DownloadReleaseAsset 下载 release 资源
-func DownloadReleaseAsset(ctx context.Context, owner, repo string, filter AssetFilter, getDistFile func(asset *github.ReleaseAsset) string) (asset *github.ReleaseAsset, err error) {
+func DownloadReleaseAsset(ctx context.Context, owner, repo string, filter AssetFilter, getDistFile func(asset *github.ReleaseAsset, release *github.RepositoryRelease) string) (asset *github.ReleaseAsset, exist bool, err error) {
 	releases, _, err := cli.Repositories.ListReleases(ctx, owner, repo, nil)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if len(releases) == 0 {
-		return nil, err
+		return nil, false, err
 	}
-	asset = filter(releases)
+	asset, release := filter(releases)
 	if asset == nil {
-		return nil, fmt.Errorf("no release assert found from https://github.com/%s/%s/releases", owner, repo)
+		return nil, false, fmt.Errorf("no release assert found from https://github.com/%s/%s/releases", owner, repo)
+	}
+	distFile := getDistFile(asset, release)
+	if ok, _ := kit.IsFileOrDirExist(distFile); ok {
+		return asset, true, nil
 	}
 	rc, _, err := cli.Repositories.DownloadReleaseAsset(ctx, owner, repo, *asset.ID, httpcli.GetClient())
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	defer rc.Close()
-	_, err = kit.Copy(getDistFile(asset), rc)
+	_, err = kit.Copy(distFile, rc)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return asset, nil
+	return asset, false, nil
 }
