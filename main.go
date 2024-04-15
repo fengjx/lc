@@ -7,26 +7,34 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/fengjx/lc/commands"
-	"github.com/fengjx/lc/common"
 )
 
-const appName = "lc"
+// build info
+var (
+	version = "dev"
+	commit  = ""
+	date    = ""
+	builtBy = ""
+)
+
 const appAbout = "源码: https://github.com/fengjx/lc"
 const appDescription = "luchen cli tools"
 const appCopyright = "(c) 2024 by xd-fjx@qq.com All rights reserved."
 
 var Metadata = map[string]interface{}{
-	"Name":        appName,
 	"About":       appAbout,
 	"Description": appDescription,
+	"Commit":      commit,
+	"Date":        date,
+	"builtBy":     builtBy,
 }
 
 func main() {
 	app := cli.NewApp()
-	app.Version = common.Version
-	app.Usage = appAbout
-	app.Description = appDescription
+	app.Name = "lc"
 	app.Copyright = appCopyright
+	app.Version = version
+	app.Description = appDescription
 	app.EnableBashCompletion = true
 	app.Commands = commands.Commands
 	app.Metadata = Metadata
