@@ -1,6 +1,6 @@
 server:
   http:
-    server-name: "glca"
+    server-name: "{{.proj}}"
     listen: ":8080"
     cors:
       allow-origins:

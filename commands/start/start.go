@@ -17,6 +17,15 @@ import (
 //go:embed template/*
 var embedFS embed.FS
 
+const help = `
+项目创建完成，执行一下步骤启动服务
+1. cd out/test
+2. go mod tidy
+3. 修改数据库配置 conf/app.yml
+4. 初始化数据库 go run tools/init/main.go
+5. 启动服务 go run main.go
+`
+
 var Command = &cli.Command{
 	Name:   "start",
 	Usage:  "开始一个新项目",
@@ -82,11 +91,6 @@ func action(ctx *cli.Context) error {
 		FuncMap:     funcMap,
 	}
 	fg.Gen()
-	color.Green("项目创建完成，执行一下步骤启动服务")
-	color.Green("1. cd %s", out)
-	color.Green("2. go mod tidy")
-	color.Green("3. 修改数据库配置 conf/app.yml")
-	color.Green("4. 初始化数据库 go run tools/init/main.go")
-	color.Green("5. 启动服务 go run main.go")
+	color.Green(help)
 	return nil
 }

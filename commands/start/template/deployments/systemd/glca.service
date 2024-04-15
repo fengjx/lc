@@ -1,13 +1,13 @@
 [Unit]
 # 服务名称，可自定义
-Description = glca server
+Description = {{.proj}} server
 After = network.target syslog.target
 Wants = network.target
 
 [Service]
 Type = name
 # 启动命令
-ExecStart = /path/to/glca -c /path/to/app-prod.yml
+ExecStart = /path/to/{{.proj}} -c /path/to/app-prod.yml
 
 [Install]
 WantedBy = multi-user.target
