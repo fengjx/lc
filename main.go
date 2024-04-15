@@ -17,16 +17,14 @@ var (
 	builtBy = ""
 )
 
-const appAbout = "源码: https://github.com/fengjx/lc"
-const appDescription = "luchen cli tools"
-const appCopyright = "(c) 2024 by xd-fjx@qq.com All rights reserved."
+const appDescription = "cli tools for lca, repo: https://github.com/fengjx/lc"
+const appCopyright = "(c) 2024 by fengjianxin2012@gmail.com All rights reserved."
 
 var Metadata = map[string]interface{}{
-	"About":       appAbout,
-	"Description": appDescription,
 	"Commit":      commit,
 	"Date":        date,
 	"builtBy":     builtBy,
+	"Description": appDescription,
 }
 
 func main() {
@@ -39,6 +37,12 @@ func main() {
 	app.Commands = commands.Commands
 	app.Metadata = Metadata
 	app.Suggest = true
+	app.Authors = []*cli.Author{
+		{
+			Name:  "fengjx",
+			Email: "fengjianxin2012@gmail.com",
+		},
+	}
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
