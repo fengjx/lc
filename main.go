@@ -14,7 +14,6 @@ var (
 	version = "dev"
 	commit  = ""
 	date    = ""
-	builtBy = ""
 )
 
 const appDescription = "cli tools for lca, repo: https://github.com/fengjx/lc"
@@ -23,7 +22,6 @@ const appCopyright = "(c) 2024 by fengjianxin2012@gmail.com All rights reserved.
 var Metadata = map[string]interface{}{
 	"Commit":      commit,
 	"Date":        date,
-	"builtBy":     builtBy,
 	"Description": appDescription,
 }
 
