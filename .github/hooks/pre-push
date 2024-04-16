@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# 获取当前 Git 信息
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+COMMIT_HASH=$(git rev-parse --short HEAD)
+
+# 在 push 之前生成 Git 信息 JSON 文件到工程目录
+echo "{" > .git-info.json
+echo "  \"branch\": \"$BRANCH_NAME\"," >> .git-info.json
+echo "  \"commit\": \"$COMMIT_HASH\"" >> .git-info.json
+echo "}" >> .git-info.json
+
+git add .git-info.json
+git commit -m "Auto-generated git info"
+
+# 继续执行 push 操作
+exit 0
