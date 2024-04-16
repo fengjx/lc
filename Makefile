@@ -16,3 +16,9 @@ install:
 .PHONY: format
 format:
 	gofumpt -l -w .
+
+.PHONY: init-git
+init-git:
+	@cp .github/hooks/* .git/hooks/
+	@chmod +x .git/hooks/*
+	@echo 'git init done'
