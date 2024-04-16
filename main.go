@@ -3,21 +3,22 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/fengjx/lc/commands"
+	"github.com/fengjx/lc/common"
 )
 
 // build info
 var (
-	version = "v1.0.0-dev"
+	version = strings.Join([]string{"v1.0.0", common.GitInfo.Branch, common.GitInfo.Hash}, "-")
 	commit  = ""
 	date    = ""
 )
 
-const appDescription = "cli tools for lca, repo: https://github.com/fengjx/lc"
-const appCopyright = "(c) 2024 by fengjianxin2012@gmail.com All rights reserved."
+const appDescription = "lca 命令行工具, 源码: https://github.com/fengjx/lc"
 
 var Metadata = map[string]interface{}{
 	"Commit":      commit,
@@ -28,7 +29,6 @@ var Metadata = map[string]interface{}{
 func main() {
 	app := cli.NewApp()
 	app.Name = "lc"
-	app.Copyright = appCopyright
 	app.Version = version
 	app.Description = appDescription
 	app.EnableBashCompletion = true
