@@ -1,6 +1,12 @@
 package common
 
-import "github.com/fengjx/lc/pkg/kit"
+import (
+	"embed"
+	"encoding/json"
+)
+
+//go:embed .git-info.json
+var embedFS embed.FS
 
 const (
 	GithubOwner = "fengjx"
@@ -16,10 +22,11 @@ type gitInfo struct {
 
 func getGitInfo() gitInfo {
 	info := gitInfo{}
-	gitInfoPath, _ := kit.Lookup(".git-info.json", 5)
-	if gitInfoPath != "" {
-		_ = kit.ReadJSONFile(gitInfoPath, &info)
+	jsonBys, err := embedFS.ReadFile(".git-info.json")
+	if err != nil {
+		return info
 	}
+	_ = json.Unmarshal(jsonBys, &info)
 	return info
 }
 
