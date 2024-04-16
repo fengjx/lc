@@ -73,7 +73,7 @@ create table if not exists sys_menu
 
 
 INSERT IGNORE INTO sys_user (username, pwd, salt, email, nickname, avatar, status)
-VALUES ('admin', '790ae2c7a1037b099ccfceef64fa07e0', 'xBxPKo', 'fengjianxin2012@gmail.com', '超级管理员', '', 'normal');
+VALUES ('admin', '79e915ab394c5bea4b17de86b60283f7', 'abkCeW', 'fengjianxin2012@gmail.com', '超级管理员', '', 'normal');
 
 INSERT IGNORE INTO sys_menu (id, parent_id, name, icon, path, redirect, schema_api, sort_no, visible, is_sys, status,
                              remark)

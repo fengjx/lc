@@ -19,7 +19,7 @@ var embedFS embed.FS
 
 const help = `
 项目创建完成，执行一下步骤启动服务
-1. cd out/test
+1. cd %s
 2. go mod tidy
 3. 修改数据库配置 conf/app.yml
 4. 初始化数据库 go run tools/init/main.go
@@ -91,6 +91,6 @@ func action(ctx *cli.Context) error {
 		FuncMap:     funcMap,
 	}
 	fg.Gen()
-	color.Green(help)
+	color.Green(help, out)
 	return nil
 }
