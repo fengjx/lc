@@ -11,9 +11,9 @@ import (
 	"github.com/fengjx/lc/common"
 )
 
-// build info
+// -ldflags 注入
 var (
-	version = strings.Join([]string{"v1.0.0", common.GitInfo.Branch, common.GitInfo.Hash}, "-")
+	version = ""
 	commit  = ""
 	date    = ""
 )
@@ -27,6 +27,10 @@ var Metadata = map[string]interface{}{
 }
 
 func main() {
+	if version == "" {
+		// go install 安装的没有预编译注入版本号
+		version = strings.Join([]string{"v1.0.0", common.GitInfo.Branch, common.GitInfo.Hash}, "-")
+	}
 	app := cli.NewApp()
 	app.Name = "lc"
 	app.Version = version
