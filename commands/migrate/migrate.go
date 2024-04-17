@@ -181,11 +181,15 @@ type gen struct {
 }
 
 func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
+	tableOpt := config.Target.Tables[table.Name]
+	if tableOpt.UseAdmin == nil {
+		tableOpt.UseAdmin = &config.Target.Custom.UseAdmin
+	}
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,
 		"TagName":  config.Target.Custom.TagName,
 		"Table":    table,
-		"TableOpt": config.Target.Tables[table.Name],
+		"TableOpt": tableOpt,
 	}
 	outDir := filepath.Join(config.Target.Custom.OutDir)
 	funcMap := template.FuncMap{
@@ -207,7 +211,7 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 		Attr:        attr,
 		FuncMap:     funcMap,
 	}
-	if !config.Target.Custom.UseAdmin {
+	if !*tableOpt.UseAdmin {
 		// 排除admin目录
 		fg.EntryFilter = func(ctx context.Context, entry os.DirEntry) bool {
 			adminDirs := []string{"static", "endpoint"}

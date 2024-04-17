@@ -18,6 +18,7 @@ type TableConfig struct {
 	SimpleName string `yaml:"simple-name"`
 	IsTime     bool   `yaml:"is-time"`
 	InputType  string `yaml:"input-type"`
+	UseAdmin   *bool  `yaml:"use-admin"`
 	Var        Var    `yaml:"var"`
 }
 
