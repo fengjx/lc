@@ -13,11 +13,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 
-	"{{.Var.gomod}}/connom/types"
-	"{{.Var.gomod}}/integration/db"
-	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/dao"
-	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
-	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
+	"{{.Gomod}}/connom/types"
+	"{{.Gomod}}/integration/db"
+	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/dao"
+	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
+	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
 var {{$ServiceVarName}} = &{{$ServiceName}}{}

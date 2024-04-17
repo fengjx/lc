@@ -55,6 +55,10 @@ func action(ctx *cli.Context) error {
 		color.Red("当前仅支持 mysql")
 		return nil
 	}
+	if config.Target.Custom.Gomod == "" {
+		color.Red("缺少配置[target.custom.gomod]")
+		return nil
+	}
 	dsnCfg, err := mysql.ParseDSN(config.DS.Dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -188,6 +192,7 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,
 		"TagName":  config.Target.Custom.TagName,
+		"Gomod":    config.Target.Custom.Gomod,
 		"Table":    table,
 		"TableOpt": tableOpt,
 	}

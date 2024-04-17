@@ -32,6 +32,7 @@ type Custom struct {
 	TemplateDir string `yaml:"template-dir"` // 可选，模板路径
 	TagName     string `yaml:"tag-name"`     // 可选，生成 model 的 tag，默认 json
 	UseAdmin    bool   `yaml:"use-admin"`    // 可选，是否生成管理后台接口和页面，对所有表生效
+	Gomod       string `yaml:"gomod"`        // 必须，项目 go mod module 配置
 	Var         Var    `yaml:"exy"`          // 自定义变量，对所有表生效
 }
 

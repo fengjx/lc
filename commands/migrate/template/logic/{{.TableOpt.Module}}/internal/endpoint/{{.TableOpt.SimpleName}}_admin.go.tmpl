@@ -13,10 +13,10 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"go.uber.org/zap"
 
-	"{{.Var.gomod}}/connom/types"
-	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
-	"{{.Var.gomod}}/logic/{{.TableOpt.Module}}/internal/service"
-	"{{.Var.gomod}}/transport/http"
+	"{{.Gomod}}/connom/types"
+	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
+	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/service"
+	"{{.Gomod}}/transport/http"
 )
 
 var {{.TableOpt.SimpleName}}Admin = {{$EndpointName}}{}
