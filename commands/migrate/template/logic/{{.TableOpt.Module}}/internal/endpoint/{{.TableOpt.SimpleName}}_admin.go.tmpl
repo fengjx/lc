@@ -25,7 +25,7 @@ type {{$HandlerName}} struct {
 }
 
 func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
-	router.Sub(http.AdminAPI+"/sys/{{.TableOpt.SimpleName}}", func(sub *luchen.HTTPServeMux) {
+	router.Sub(http.AdminAPI+"/{{.TableOpt.Module}}/{{.TableOpt.SimpleName}}", func(sub *luchen.HTTPServeMux) {
 		sub.Handle("/add", h.add())
 		sub.Handle("/update", h.update())
 		sub.Handle("/del", h.del())

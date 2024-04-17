@@ -47,18 +47,13 @@ func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) 
 
 // Add 新增记录
 func (svc {{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) (int64, error) {
-	return dao.{{$ObjName}}Dao.SaveContext(ctx, model,
-		meta.{{$ObjName}}Meta.Ctime,
-		meta.{{$ObjName}}Meta.Utime,
-	)
+	return dao.{{$ObjName}}Dao.SaveContext(ctx, model)
 }
 
 // Update 更新记录
 func (svc {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
 	return dao.{{$ObjName}}Dao.UpdateContext(ctx, model,
 		meta.{{$ObjName}}Meta.PrimaryKey(),
-		meta.{{$ObjName}}Meta.Ctime,
-		meta.{{$ObjName}}Meta.Utime,
 	)
 }
 
