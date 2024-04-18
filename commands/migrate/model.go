@@ -54,4 +54,6 @@ type Column struct {
 	SQLType      string
 	Comment      string
 	IsPrimaryKey bool
+	DefaultValue string
+	Extra        string
 }

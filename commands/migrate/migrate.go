@@ -3,7 +3,6 @@ package migrate
 import (
 	"context"
 	"embed"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,13 +60,15 @@ func action(ctx *cli.Context) error {
 	}
 	dsnCfg, err := mysql.ParseDSN(config.DS.Dsn)
 	if err != nil {
-		log.Fatal(err)
+		color.Red("数据库dsn配置错误：%s, %s", config.DS.Dsn, err.Error())
+		return err
 	}
 	db := sqlx.MustOpen(config.DS.Type, config.DS.Dsn)
 	db.Mapper = reflectx.NewMapperFunc("json", strings.ToTitle)
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		color.Red("数据库连接失败，请检查配置，%s", err.Error())
+		return err
 	}
 
 	debug := common.IsDebug()
@@ -104,7 +105,8 @@ func loadTableMeta(db *sqlx.DB, dbName, tableName string) *Table {
 
 	rows, err := db.Query(querySQL, args...)
 	if err != nil {
-		log.Fatal(err)
+		color.Red("读取表信息失败：%s, %s", tableName, err.Error())
+		panic(err)
 	}
 	defer rows.Close()
 	table := new(Table)
@@ -114,7 +116,8 @@ func loadTableMeta(db *sqlx.DB, dbName, tableName string) *Table {
 		var autoIncr *int
 		err = rows.Scan(&name, &engine, &autoIncr, &comment)
 		if err != nil {
-			log.Fatal(err)
+			color.Red("读取表信息失败：%s, %s", tableName, err.Error())
+			panic(err)
 		}
 		table.Name = name
 		table.StructName = kit.GonicCase(name)
@@ -127,7 +130,8 @@ func loadTableMeta(db *sqlx.DB, dbName, tableName string) *Table {
 		}
 	}
 	if rows.Err() != nil {
-		log.Fatal(err)
+		color.Red("读取表信息失败：%s, %s", tableName, err.Error())
+		panic(err)
 	}
 	columns, primaryKey := loadColumnMeta(db, dbName, tableName)
 	table.Columns = columns
@@ -141,11 +145,19 @@ func loadTableMeta(db *sqlx.DB, dbName, tableName string) *Table {
 // *Column PrimaryKey column
 func loadColumnMeta(db *sqlx.DB, dbName, tableName string) ([]Column, Column) {
 	args := []interface{}{dbName, tableName}
-	querySQL := "SELECT column_name, column_type, column_comment, column_key FROM information_schema.columns " +
-		"WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION"
+	querySQL := `SELECT
+			column_name,
+			column_type,
+			column_comment, 
+			column_key,
+			ifnull(column_default, ''),
+			ifnull(extra, '')
+		FROM information_schema.columns
+		WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION`
 	rows, err := db.Query(querySQL, args...)
 	if err != nil {
-		log.Fatal(err)
+		color.Red("读取表[%s]字段信息失败", tableName)
+		panic(err)
 	}
 	defer rows.Close()
 	var columns []Column
@@ -155,13 +167,27 @@ func loadColumnMeta(db *sqlx.DB, dbName, tableName string) ([]Column, Column) {
 		var columnType string
 		var columnComment string
 		var columnKey string
-		err = rows.Scan(&columnName, &columnType, &columnComment, &columnKey)
+		var columnDefault string
+		var extra string
+		err = rows.Scan(
+			&columnName,
+			&columnType,
+			&columnComment,
+			&columnKey,
+			&columnDefault,
+			&extra,
+		)
 		if err != nil {
-			log.Fatal(err)
+			color.Red("读取表[%s]字段信息失败", tableName)
+			panic(err)
 		}
-		col := Column{}
+		col := Column{
+			TableName: tableName,
+		}
 		col.Name = strings.Trim(columnName, "` ")
 		col.Comment = columnComment
+		col.DefaultValue = columnDefault
+		col.Extra = extra
 
 		fields := strings.Fields(columnType)
 		columnType = fields[0]
