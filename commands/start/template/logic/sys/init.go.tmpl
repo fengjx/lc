@@ -14,7 +14,7 @@ import (
 	"{{.gomod}}/logic/sys/syspub"
 )
 
-// Init app 初始化
+// Init 初始化
 func Init(ctx context.Context, httpServer *luchen.HTTPServer) {
 	lifecycle.AddHook(lifecycle.InterfaceAware, func() {
 		syspub.SetDictAPI(provider.DictProvider)

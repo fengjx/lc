@@ -3,14 +3,14 @@
 
 {
   "type": "page",
-  "name": "sys-",
+  "name": "cms-user",
   "body": [
     {
       "type": "crud",
-      "name": "sys_dict",
+      "name": "cms_user",
       "api": {
         "method": "post",
-        "url": "${API_BASEURL}/admin/sys//query",
+        "url": "${API_BASEURL}/admin/cms/user/query",
         "data": {
           "order_fields": [
             {
@@ -64,7 +64,7 @@
                 "type": "select",
                 "size": "sm",
                 "name": "status",
-                "source": "${options['sys_dict.status']}"
+                "source": "${options['cms_user.status']}"
               }
             ]
           }
@@ -80,36 +80,48 @@
               "body": {
                 "type": "form",
                 "name": "add-form",
-                "api": "POST:${API_BASEURL}/admin/sys//add",
+                "api": "POST:${API_BASEURL}/admin/cms/user/add",
                 "body": [
                   
                   
                   {
-                    "label": "分组",
+                    "label": "用户名",
                     "type": "input-text",
-                    "name": "group"
+                    "name": "username"
                   },
                   
                   {
-                    "label": "分组名称",
+                    "label": "密码",
                     "type": "input-text",
-                    "name": "group_name"
+                    "name": "pwd"
                   },
                   
                   {
-                    "label": "数据值",
+                    "label": "密码盐",
                     "type": "input-text",
-                    "name": "value"
+                    "name": "salt"
                   },
                   
                   {
-                    "label": "显示标签",
+                    "label": "邮箱",
                     "type": "input-text",
-                    "name": "label"
+                    "name": "email"
                   },
                   
                   {
-                    "label": "数据状态",
+                    "label": "昵称",
+                    "type": "input-text",
+                    "name": "nickname"
+                  },
+                  
+                  {
+                    "label": "头像",
+                    "type": "input-text",
+                    "name": "avatar"
+                  },
+                  
+                  {
+                    "label": "状态",
                     "type": "input-text",
                     "name": "status"
                   },
@@ -155,7 +167,7 @@
           "actionType": "ajax",
           "api": {
             "method": "DELETE",
-            "url": "${API_BASEURL}/admin/sys//del",
+            "url": "${API_BASEURL}/admin/cms/user/del",
             "data": {
               "ids": "${ids}"
             }
@@ -165,7 +177,7 @@
       ],
       "quickSaveApi": {
         "method": "PATCH",
-        "url": "${API_BASEURL}/admin/sys//batch-update",
+        "url": "${API_BASEURL}/admin/cms/user/batch-update",
         "data": {
           "rows": "${rowsDiff}"
         }
@@ -183,27 +195,37 @@
         },
         
         {
-          "label": "分组",
-          "name": "group"
+          "label": "用户名",
+          "name": "username"
         },
         
         {
-          "label": "分组名称",
-          "name": "group_name"
+          "label": "密码",
+          "name": "pwd"
         },
         
         {
-          "label": "数据值",
-          "name": "value"
+          "label": "密码盐",
+          "name": "salt"
         },
         
         {
-          "label": "显示标签",
-          "name": "label"
+          "label": "邮箱",
+          "name": "email"
         },
         
         {
-          "label": "数据状态",
+          "label": "昵称",
+          "name": "nickname"
+        },
+        
+        {
+          "label": "头像",
+          "name": "avatar"
+        },
+        
+        {
+          "label": "状态",
           "name": "status"
         },
         
@@ -244,31 +266,43 @@
                     },
                     
                     {
-                      "label": "分组",
+                      "label": "用户名",
                       "type": "static",
-                      "name": "group"
+                      "name": "username"
                     },
                     
                     {
-                      "label": "分组名称",
+                      "label": "密码",
                       "type": "static",
-                      "name": "group_name"
+                      "name": "pwd"
                     },
                     
                     {
-                      "label": "数据值",
+                      "label": "密码盐",
                       "type": "static",
-                      "name": "value"
+                      "name": "salt"
                     },
                     
                     {
-                      "label": "显示标签",
+                      "label": "邮箱",
                       "type": "static",
-                      "name": "label"
+                      "name": "email"
                     },
                     
                     {
-                      "label": "数据状态",
+                      "label": "昵称",
+                      "type": "static",
+                      "name": "nickname"
+                    },
+                    
+                    {
+                      "label": "头像",
+                      "type": "static",
+                      "name": "avatar"
+                    },
+                    
+                    {
+                      "label": "状态",
                       "type": "static",
                       "name": "status"
                     },
@@ -306,13 +340,15 @@
                   "type": "form",
                   "api": {
                     "method": "PUT",
-                    "url": "${API_BASEURL}/admin/sys//update",
+                    "url": "${API_BASEURL}/admin/cms/user/update",
                     "data": {
                         "id": "${id}",
-                        "group": "${group}",
-                        "group_name": "${group_name}",
-                        "value": "${value}",
-                        "label": "${label}",
+                        "username": "${username}",
+                        "pwd": "${pwd}",
+                        "salt": "${salt}",
+                        "email": "${email}",
+                        "nickname": "${nickname}",
+                        "avatar": "${avatar}",
                         "status": "${status}",
                         "remark": "${remark}",
                         "utime": "${utime}",
@@ -327,31 +363,43 @@
                     
                     
                     {
-                      "label": "分组",
+                      "label": "用户名",
                       "type": "input-text",
-                      "name": "group"
+                      "name": "username"
                     },
                     
                     {
-                      "label": "分组名称",
+                      "label": "密码",
                       "type": "input-text",
-                      "name": "group_name"
+                      "name": "pwd"
                     },
                     
                     {
-                      "label": "数据值",
+                      "label": "密码盐",
                       "type": "input-text",
-                      "name": "value"
+                      "name": "salt"
                     },
                     
                     {
-                      "label": "显示标签",
+                      "label": "邮箱",
                       "type": "input-text",
-                      "name": "label"
+                      "name": "email"
                     },
                     
                     {
-                      "label": "数据状态",
+                      "label": "昵称",
+                      "type": "input-text",
+                      "name": "nickname"
+                    },
+                    
+                    {
+                      "label": "头像",
+                      "type": "input-text",
+                      "name": "avatar"
+                    },
+                    
+                    {
+                      "label": "状态",
                       "type": "input-text",
                       "name": "status"
                     },
@@ -386,7 +434,7 @@
               "confirmText": "您确认要删除[${id}]?",
               "api": {
                 "method": "post",
-                "url": "${API_BASEURL}/admin/sys//del",
+                "url": "${API_BASEURL}/admin/cms/user/del",
                 "data": {
                   "ids": "${id}"
                 }

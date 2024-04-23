@@ -1,7 +1,7 @@
 package syspub
 
 import (
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 
 	"{{.gomod}}/logic/sys/internal/data/consts"
 )
@@ -26,7 +26,7 @@ type configAPI interface {
 
 func SetConfigAPI(impl configAPI) {
 	if ConfigAPI != nil {
-		luchen.RootLogger().Warn("set ConfigAPI impl duplicate")
+		log.Warn("set ConfigAPI impl duplicate")
 		return
 	}
 	ConfigAPI = impl

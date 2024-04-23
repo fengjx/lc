@@ -6,7 +6,7 @@ import (
 	"github.com/fengjx/daox"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 	"github.com/fengjx/go-halo/json"
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 
@@ -24,12 +24,11 @@ type sysConfigBaseService struct {
 
 // Query 分页查询
 func (svc sysConfigBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.SysConfig], error) {
-	log := luchen.Logger(ctx)
 	readDB := dao.SysConfigDao.GetReadDB()
 	query.TableName = meta.SysConfigMeta.TableName()
 	list, page, err := daox.Find[entity.SysConfig](ctx, readDB, *query)
 	if err != nil {
-		log.Error("page query sys_config err", zap.Any("query", json.ToJsonDelay(query)), zap.Error(err))
+		log.ErrorCtx(ctx, "page query sys_config err", zap.Any("query", json.ToJsonDelay(query)), zap.Error(err))
 		return nil, err
 	}
 	pageVO := &types.PageVO[entity.SysConfig]{
@@ -84,14 +83,14 @@ func (svc sysConfigBaseService) BatchUpdate(ctx context.Context, param *types.Ba
 
 // DeleteByIDs 批量更新
 func (svc sysConfigBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
-	log := luchen.Logger(ctx).With(zap.Any("ids", ids))
+	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
 	_, err := dao.SysConfigDao.DeleteByCondContext(ctx, ql.C().And(
 		meta.SysConfigMeta.IdIn(ids...),
 	))
 	if err != nil {
-		log.Error("delete sys_config err", zap.Error(err))
+		l.Error("delete sys_config err", zap.Error(err))
 		return err
 	}
-	log.Info("delete sys_config success")
+	l.Info("delete sys_config success")
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/fengjx/daox"
 	"github.com/fengjx/go-halo/utils"
 	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/connom/types"
@@ -85,11 +86,10 @@ type userAdminEndpoint struct {
 
 func (e userAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysUser)
 		id, err := service.SysUserBaseSvc.Add(ctx, param)
 		if err != nil {
-			log.Error("add user err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "add user err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.AddRsp{
@@ -101,11 +101,10 @@ func (e userAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 
 func (e userAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysUser)
 		ok, err := service.SysUserBaseSvc.Update(ctx, param)
 		if err != nil {
-			log.Error("update user err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "update user err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -136,11 +135,10 @@ func (e userAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 
 func (e userAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*types.BatchUpdate)
 		ok, err := service.SysUserBaseSvc.BatchUpdate(ctx, param)
 		if err != nil {
-			log.Error("batch update user err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "batch update user err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -152,11 +150,10 @@ func (e userAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 
 func (e userAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		query := request.(*daox.QueryRecord)
 		pageVO, err := service.SysUserBaseSvc.Query(ctx, query)
 		if err != nil {
-			log.Error("page query user err", zap.Error(err))
+			log.ErrorCtx(ctx, "page query user err", zap.Error(err))
 			return nil, err
 		}
 		return pageVO.ToAmisResp(), nil

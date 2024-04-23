@@ -4,22 +4,20 @@
 
 生成的代码遵循统一的代码规范，结构清晰、易维护，方便开发者进行后续的扩展和维护。
 
-- [lca](https://github.com/fengjx/lca): luchen-admin 是一个基于 amis 封装的低代码后台管理系统，通过 json 配置即可编写前端页面
+- [lca](https://github.com/fengjx/lca): lca(luchen-admin) 是一个基于 amis 封装的低代码后台管理系统，通过 json 配置即可编写前端页面
 - [glca](https://github.com/fengjx/glca): lca 的 golang 实现版本，基于 luchen 框架开发
 - [luchen](https://github.com/fengjx/luchen): 基于go-kit二次封装的微服务框架
 
 ## 安装
 
 ```bash
-go install https://github.com/fengjx/lc
+go install https://github.com/fengjx/lc@latest
 ```
 
 ## 说明
 
 
 ### 生成项目脚手架
-
-
 
 ```bash
 lc start -m github.com/fengjx/lca-hello

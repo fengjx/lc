@@ -7,6 +7,7 @@ import (
 	"github.com/fengjx/daox"
 	"github.com/fengjx/go-halo/utils"
 	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/connom/types"
@@ -95,11 +96,10 @@ type sysMenuAdminEndpoint struct {
 
 func (e sysMenuAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysMenu)
 		id, err := service.SysMenuBaseSvc.Add(ctx, param)
 		if err != nil {
-			log.Error("add sys_menu err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "add sys_menu err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.AddRsp{
@@ -111,11 +111,10 @@ func (e sysMenuAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 
 func (e sysMenuAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysMenu)
 		ok, err := service.SysMenuBaseSvc.Update(ctx, param)
 		if err != nil {
-			log.Error("update sys_menu err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "update sys_menu err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -146,11 +145,10 @@ func (e sysMenuAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 
 func (e sysMenuAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*types.BatchUpdate)
 		ok, err := service.SysMenuBaseSvc.BatchUpdate(ctx, param)
 		if err != nil {
-			log.Error("batch update sys_menu err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "batch update sys_menu err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -162,11 +160,10 @@ func (e sysMenuAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 
 func (e sysMenuAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		query := request.(*daox.QueryRecord)
 		pageVO, err := service.SysMenuBaseSvc.Query(ctx, query)
 		if err != nil {
-			log.Error("page query sys_menu err", zap.Error(err))
+			log.ErrorCtx(ctx, "page query sys_menu err", zap.Error(err))
 			return nil, err
 		}
 		return pageVO.ToAmisResp(), nil
@@ -191,13 +188,12 @@ func (e sysMenuAdminEndpoint) buildOption(menus []*dto.MenuDTO) []*types.Option 
 
 func (e sysMenuAdminEndpoint) makeOptionsEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		treeList, err := service.SysMenuBaseSvc.TreeList(ctx, []enum.MenuStatus{
 			enum.MenuStatusNormal,
 			enum.MenuStatusDisable,
 		})
 		if err != nil {
-			log.Error("recursive query menus err", zap.Error(err))
+			log.ErrorCtx(ctx, "recursive query menus err", zap.Error(err))
 			return nil, err
 		}
 		options := []*types.Option{
@@ -236,12 +232,11 @@ func (e sysMenuAdminEndpoint) buildMenu(menus []*dto.MenuDTO) []*types.Menu {
 
 func (e sysMenuAdminEndpoint) makeFetchEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		treeList, err := service.SysMenuBaseSvc.TreeList(ctx, []enum.MenuStatus{
 			enum.MenuStatusNormal,
 		})
 		if err != nil {
-			log.Error("recursive query menus err", zap.Error(err))
+			log.ErrorCtx(ctx, "recursive query menus err", zap.Error(err))
 			return nil, err
 		}
 		pages := e.buildMenu(treeList)

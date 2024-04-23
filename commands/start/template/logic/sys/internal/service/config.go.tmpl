@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/logic/sys/internal/dao"
@@ -23,10 +23,9 @@ func newSysConfigService() *sysConfigService {
 }
 
 func (svc *sysConfigService) Refresh(ctx context.Context) {
-	log := luchen.Logger(ctx)
 	list, err := dao.SysConfigDao.ListAll(ctx)
 	if err != nil {
-		log.Error("list all sys_config err", zap.Error(err))
+		log.ErrorCtx(ctx, "list all sys_config err", zap.Error(err))
 		return
 	}
 	configMap := map[string][]*syspub.ConfigDTO{}
@@ -34,7 +33,7 @@ func (svc *sysConfigService) Refresh(ctx context.Context) {
 		configMap[item.Scope] = append(configMap[item.Scope], dto.BuildConfigDTO(item))
 	}
 	svc.configMap = configMap
-	log.Infof("refresh sys_config, size: %d", len(list))
+	log.InfofCtx(ctx, "refresh sys_config, size: %d", len(list))
 }
 
 func (svc *sysConfigService) ScopeConfig(scopes ...string) map[string][]*syspub.ConfigDTO {

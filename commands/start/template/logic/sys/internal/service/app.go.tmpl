@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/fengjx/go-halo/fs"
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/integration/db"
@@ -18,10 +18,9 @@ type appService struct {
 }
 
 func (svc appService) Init(ctx context.Context) error {
-	log := luchen.Logger(ctx)
 	initSQLFile, err := fs.Lookup("conf/init.sql", 5)
 	if err != nil {
-		log.Error("conf/init.sql not found")
+		log.ErrorCtx(ctx, "conf/init.sql not found")
 		return err
 	}
 	content, err := os.ReadFile(initSQLFile)

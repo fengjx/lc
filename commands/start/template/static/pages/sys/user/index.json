@@ -71,30 +71,26 @@
                 "type": "input-text",
                 "name": "username",
                 "clearable": true,
-                "placeholder": "用户名搜索",
-                "size": "sm"
+                "placeholder": "用户名搜索"
               },
               {
                 "label": "邮箱",
                 "type": "input-text",
                 "name": "email",
                 "clearable": true,
-                "placeholder": "邮箱搜索",
-                "size": "sm"
+                "placeholder": "邮箱搜索"
               },
               {
                 "label": "手机号",
                 "type": "input-text",
                 "name": "phone",
                 "clearable": true,
-                "placeholder": "手机号搜索",
-                "size": "sm"
+                "placeholder": "手机号搜索"
               },
               {
                 "label": "状态",
                 "type": "select",
                 "name": "status",
-                "size": "sm",
                 "source": "${options['sys_user.status']}"
               }
             ]

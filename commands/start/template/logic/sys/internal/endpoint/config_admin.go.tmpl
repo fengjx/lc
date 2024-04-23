@@ -7,6 +7,7 @@ import (
 	"github.com/fengjx/daox"
 	"github.com/fengjx/go-halo/utils"
 	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/connom/types"
@@ -75,11 +76,10 @@ type configAdminEndpoint struct {
 
 func (e configAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysConfig)
 		id, err := service.SysConfigBaseSvc.Add(ctx, param)
 		if err != nil {
-			log.Error("add sys_config err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "add sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.AddRsp{
@@ -91,11 +91,10 @@ func (e configAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 
 func (e configAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*entity.SysConfig)
 		ok, err := service.SysConfigBaseSvc.Update(ctx, param)
 		if err != nil {
-			log.Error("update sys_config err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "update sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -126,11 +125,10 @@ func (e configAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 
 func (e configAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		param := request.(*types.BatchUpdate)
 		ok, err := service.SysConfigBaseSvc.BatchUpdate(ctx, param)
 		if err != nil {
-			log.Error("batch update sys_config err", zap.Any("param", param), zap.Error(err))
+			log.ErrorCtx(ctx, "batch update sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
 		}
 		response = types.OKRsp{
@@ -142,11 +140,10 @@ func (e configAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 
 func (e configAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		query := request.(*daox.QueryRecord)
 		pageVO, err := service.SysConfigBaseSvc.Query(ctx, query)
 		if err != nil {
-			log.Error("page query sys_config err", zap.Error(err))
+			log.ErrorCtx(ctx, "page query sys_config err", zap.Error(err))
 			return nil, err
 		}
 		return pageVO.ToAmisResp(), nil

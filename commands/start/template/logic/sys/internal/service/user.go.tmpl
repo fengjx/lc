@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/fengjx/daox"
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/logic/sys/internal/dao"
@@ -18,11 +18,10 @@ type sysUserService struct {
 }
 
 func (svc sysUserService) GetByUsername(ctx context.Context, username string) (*entity.SysUser, error) {
-	log := luchen.Logger(ctx)
 	user := &entity.SysUser{}
 	ok, err := dao.SysUserDao.GetByColumn(daox.OfKv(meta.SysUserMeta.Username, username), user)
 	if err != nil {
-		log.Error("get user by username err", zap.Error(err))
+		log.ErrorCtx(ctx, "get user by username err", zap.Error(err))
 		return nil, err
 	}
 	if !ok {

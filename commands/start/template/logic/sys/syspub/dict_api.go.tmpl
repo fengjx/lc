@@ -1,6 +1,6 @@
 package syspub
 
-import "github.com/fengjx/luchen"
+import "github.com/fengjx/luchen/log"
 
 var DictAPI dictAPI
 
@@ -18,7 +18,7 @@ type dictAPI interface {
 
 func SetDictAPI(impl dictAPI) {
 	if DictAPI != nil {
-		luchen.RootLogger().Warn("set DictAPI impl duplicate")
+		log.Warn("set DictAPI impl duplicate")
 		return
 	}
 	DictAPI = impl

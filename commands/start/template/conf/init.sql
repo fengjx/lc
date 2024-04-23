@@ -71,7 +71,6 @@ create table if not exists sys_menu
     AUTO_INCREMENT = 1000
     default charset = utf8mb4 comment '系统菜单表';
 
-
 INSERT IGNORE INTO sys_user (username, pwd, salt, email, nickname, avatar, status)
 VALUES ('admin', '79e915ab394c5bea4b17de86b60283f7', 'abkCeW', 'fengjianxin2012@gmail.com', '超级管理员', '', 'normal');
 

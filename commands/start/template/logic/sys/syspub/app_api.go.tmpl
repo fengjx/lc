@@ -3,7 +3,7 @@ package syspub
 import (
 	"context"
 
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 )
 
 var AppAPI appAPI
@@ -14,7 +14,7 @@ type appAPI interface {
 
 func SetAppAPI(impl appAPI) {
 	if AppAPI != nil {
-		luchen.RootLogger().Warn("set AppAPI impl duplicate")
+		log.Warn("set AppAPI impl duplicate")
 		return
 	}
 	AppAPI = impl

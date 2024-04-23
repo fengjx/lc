@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/logic/sys/internal/dao"
@@ -18,10 +18,9 @@ type dictService struct {
 }
 
 func (svc *dictService) Refresh(ctx context.Context) {
-	log := luchen.Logger(ctx)
 	list, err := dao.SysDictDao.ListAll(ctx)
 	if err != nil {
-		log.Error("list all sys_config err", zap.Error(err))
+		log.ErrorCtx(ctx, "list all sys_config err", zap.Error(err))
 		return
 	}
 	dictMap := map[string][]*syspub.DictDTO{}
@@ -29,7 +28,7 @@ func (svc *dictService) Refresh(ctx context.Context) {
 		dictMap[item.Group] = append(dictMap[item.Group], dto.BuildDictDTO(item))
 	}
 	svc.dictMap = dictMap
-	log.Infof("refresh sys_dict, size: %d", len(list))
+	log.InfofCtx(ctx, "refresh sys_dict, size: %d", len(list))
 }
 
 func (svc *dictService) GetGroupDict(groups ...string) map[string][]*syspub.DictDTO {

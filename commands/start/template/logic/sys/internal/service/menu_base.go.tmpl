@@ -7,7 +7,7 @@ import (
 	"github.com/fengjx/daox/sqlbuilder/ql"
 	"github.com/fengjx/go-halo/json"
 	"github.com/fengjx/go-halo/utils"
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -29,7 +29,6 @@ type sysMenuBaseService struct {
 
 // Query 分页查询
 func (svc sysMenuBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[*dto.MenuDTO], error) {
-	log := luchen.Logger(ctx)
 	readDB := dao.SysMenuDao.GetReadDB()
 	query.TableName = meta.SysMenuMeta.TableName()
 	// 只查根菜单
@@ -42,7 +41,7 @@ func (svc sysMenuBaseService) Query(ctx context.Context, query *daox.QueryRecord
 	query.OrderFields = append(query.OrderFields, daox.OrderField{Field: meta.SysMenuMeta.SortNo, OrderType: daox.OrderTypeAsc})
 	list, page, err := daox.Find[*entity.SysMenu](ctx, readDB, *query)
 	if err != nil {
-		log.Error("page query sys_menu err", zap.Any("query", json.ToJsonDelay(query)), zap.Error(err))
+		log.ErrorCtx(ctx, "page query sys_menu err", zap.Any("query", json.ToJsonDelay(query)), zap.Error(err))
 		return nil, err
 	}
 	var parentIDs []int64
@@ -124,25 +123,24 @@ func (svc sysMenuBaseService) BatchUpdate(ctx context.Context, param *types.Batc
 
 // DeleteByIDs 批量更新
 func (svc sysMenuBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
-	log := luchen.Logger(ctx).With(zap.Any("ids", ids))
+	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
 	_, err := dao.SysMenuDao.DeleteByCondContext(ctx, ql.C().And(
 		meta.SysMenuMeta.IdIn(ids...),
 		meta.SysMenuMeta.IsSysNotEQ(1),
 	))
 	if err != nil {
-		log.Error("delete sys_menu err", zap.Error(err))
+		l.Error("delete sys_menu err", zap.Error(err))
 		return err
 	}
-	log.Info("delete sys_menu success")
+	l.Info("delete sys_menu success")
 	return nil
 }
 
 // TreeList 查询菜单 tree
 func (svc sysMenuBaseService) TreeList(ctx context.Context, status []enum.MenuStatus) ([]*dto.MenuDTO, error) {
-	log := luchen.Logger(ctx)
 	rootList, err := dao.SysMenuDao.ListChildren(ctx, status, 0)
 	if err != nil {
-		log.Error("query root menu list err", zap.Error(err))
+		log.ErrorCtx(ctx, "query root menu list err", zap.Error(err))
 		return nil, err
 	}
 	if len(rootList) == 0 {
@@ -156,7 +154,7 @@ func (svc sysMenuBaseService) TreeList(ctx context.Context, status []enum.MenuSt
 	})
 	menuMap, err := svc.recursiveChildren(ctx, status, parentIDs...)
 	if err != nil {
-		log.Error("recursive query menu children err", zap.Error(err))
+		log.ErrorCtx(ctx, "recursive query menu children err", zap.Error(err))
 		return nil, err
 	}
 	for _, item := range dtos {

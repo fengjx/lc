@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 
 	"{{.gomod}}/connom/auth"
@@ -49,17 +50,17 @@ type loginEndpoint struct {
 func (e loginEndpoint) makeLoginEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(*protocol.LoginReq)
-		log := luchen.Logger(ctx).With(zap.String("username", req.Username))
+		l := log.GetLogger(ctx).With(zap.String("username", req.Username))
 		user, err := service.UserSvc.GetByUsername(ctx, req.Username)
 		if err != nil {
-			log.Error("user login err",
+			l.Error("user login err",
 				zap.String("username", req.Username),
 				zap.Error(err),
 			)
 			return nil, err
 		}
 		if user == nil {
-			log.Warn("user not exist", zap.String("username", req.Username))
+			l.Warn("user not exist", zap.String("username", req.Username))
 			return nil, errno.UserNotExistErr
 		}
 		if !checkPassword(user, req.Password) {
@@ -69,7 +70,7 @@ func (e loginEndpoint) makeLoginEndpoint() luchen.Endpoint {
 			UID: user.ID,
 		})
 		if err != nil {
-			log.Error("gen token err", zap.Error(err))
+			l.Error("gen token err", zap.Error(err))
 			return nil, err
 		}
 		resp := &protocol.LoginResp{
@@ -82,11 +83,10 @@ func (e loginEndpoint) makeLoginEndpoint() luchen.Endpoint {
 
 func (e loginEndpoint) makeUserInfoEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		log := luchen.Logger(ctx)
 		uid := current.UID(ctx)
 		user, err := service.SysUserBaseSvc.Get(ctx, uid)
 		if err != nil {
-			log.Error("get user_info err", zap.Int64("uid", uid), zap.Error(err))
+			log.ErrorCtx(ctx, "get user_info err", zap.Int64("uid", uid), zap.Error(err))
 			return nil, err
 		}
 		resp := &protocol.UserInfoResp{

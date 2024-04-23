@@ -26,7 +26,8 @@ build-go:
 .PHONY: migrate
 ### migrate:			同步数据库生成代码
 migrate:
-	lc migrate -c .gen/config.yml
+	@export USE_PRE=1 && lc migrate -c .gen/config.yml
+	@echo "migrate done"
 
 .PHONY: init
 ### init:				初始化数据

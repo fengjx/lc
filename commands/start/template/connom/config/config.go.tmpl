@@ -6,6 +6,7 @@ import (
 
 	"github.com/fengjx/go-halo/fs"
 	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	"go.uber.org/zap"
 )
 
@@ -17,7 +18,7 @@ func init() {
 
 	appConfigFile, err := fs.Lookup("conf/app.yml", 5)
 	if err != nil {
-		luchen.RootLogger().Panic("config file not found")
+		log.Panic("config file not found")
 	}
 	configs := []string{appConfigFile}
 	var configFile string
@@ -33,9 +34,9 @@ func init() {
 	if configFile != "" {
 		configFile, err = fs.Lookup(configFile, 5)
 		if err != nil {
-			luchen.RootLogger().Panic("config file not found", zap.String("file", configFile), zap.Error(err))
+			log.Panic("config file not found", zap.String("file", configFile), zap.Error(err))
 		}
-		luchen.RootLogger().Infof("load custom config file: %s", configFile)
+		log.Infof("load custom config file: %s", configFile)
 		configs = append(configs, configFile)
 	}
 	appConfig = luchen.MustLoadConfig[AppConfig](configs...)

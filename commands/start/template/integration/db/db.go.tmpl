@@ -1,11 +1,10 @@
 package db
 
 import (
-	"log"
 	"strings"
 
 	"github.com/fengjx/daox"
-	"github.com/fengjx/luchen"
+	"github.com/fengjx/luchen/log"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/jmoiron/sqlx"
@@ -40,7 +39,7 @@ func init() {
 		db.Mapper = toLowerMapper
 		dbMap[k] = db
 		txManagerMap[k] = daox.NewTxManager(db)
-		luchen.RootLogger().Infof("init db[%s]", k)
+		log.Infof("init db[%s]", k)
 	}
 	defaultDB := dbMap[defaultDBName]
 	daox.UseDefaultMasterDB(defaultDB)
