@@ -1,8 +1,9 @@
 package service
 {{$ObjName := GonicCase .Table.Name}}
 {{$VarObjName := FirstLower $ObjName}}
-{{$ServiceName := print $VarObjName "BaseService"}}
-{{$ServiceVarName := print $ObjName "BaseSvc"}}
+{{$SimpleName := .TableOpt.SimpleName}}
+{{$ServiceName := print $SimpleName "BaseService"}}
+{{$ServiceVarName := print $SimpleName "BaseSvc"}}
 import (
 	"context"
 

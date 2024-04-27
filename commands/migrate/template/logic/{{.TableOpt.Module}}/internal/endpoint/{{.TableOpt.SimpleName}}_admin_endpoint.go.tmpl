@@ -1,78 +1,24 @@
 package endpoint
 {{$ObjName := GonicCase .Table.Name}}
 {{$VarObjName := FirstLower $ObjName}}
-{{$HandlerName := print $VarObjName "AdminHandler"}}
-{{$EndpointName := print $VarObjName "AdminEndpoint"}}
+{{$SimpleName := .TableOpt.SimpleName}}
+{{$EndpointName := print $SimpleName "AdminEndpoint"}}
 import (
 	"context"
-	"strconv"
+    "strconv"
 
-	"github.com/fengjx/daox"
-	"github.com/fengjx/go-halo/utils"
-	"github.com/fengjx/luchen"
-	httptransport "github.com/go-kit/kit/transport/http"
-	"go.uber.org/zap"
+    "github.com/fengjx/daox"
+    "github.com/fengjx/go-halo/utils"
+    "github.com/fengjx/luchen"
+    "github.com/fengjx/luchen/log"
+    "go.uber.org/zap"
 
 	"{{.Gomod}}/connom/types"
 	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
 	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/service"
-	"{{.Gomod}}/transport/http"
 )
 
 var {{.TableOpt.SimpleName}}Admin = {{$EndpointName}}{}
-
-type {{$HandlerName}} struct {
-}
-
-func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
-	router.Sub(http.AdminAPI+"/{{.TableOpt.Module}}/{{.TableOpt.SimpleName}}", func(sub *luchen.HTTPServeMux) {
-		sub.Handle("/add", h.add())
-		sub.Handle("/update", h.update())
-		sub.Handle("/del", h.del())
-		sub.Handle("/batch-update", h.batchUpdate())
-		sub.Handle("/query", h.query())
-	})
-}
-
-func (h {{$HandlerName}}) query() *httptransport.Server {
-	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeQueryEndpoint(),
-		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h {{$HandlerName}}) add() *httptransport.Server {
-	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeAddEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h {{$HandlerName}}) update() *httptransport.Server {
-	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h {{$HandlerName}}) del() *httptransport.Server {
-	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeDelEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.DelReq],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h {{$HandlerName}}) batchUpdate() *httptransport.Server {
-	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeBatchUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
 
 type {{$EndpointName}} struct {
 }
