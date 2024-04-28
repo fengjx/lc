@@ -13,63 +13,9 @@ import (
 	"{{.gomod}}/connom/types"
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/service"
-	"{{.gomod}}/transport/http"
 )
 
 var dictAdmin = sysDictAdminEndpoint{}
-
-type sysDictAdminHandler struct {
-}
-
-func (h sysDictAdminHandler) Bind(router *luchen.HTTPServeMux) {
-	router.Sub(http.AdminAPI+"/sys/dict", func(sub *luchen.HTTPServeMux) {
-		sub.Handle("/add", h.add())
-		sub.Handle("/update", h.update())
-		sub.Handle("/del", h.del())
-		sub.Handle("/batch-update", h.batchUpdate())
-		sub.Handle("/query", h.query())
-	})
-}
-
-func (h sysDictAdminHandler) query() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		dictAdmin.makeQueryEndpoint(),
-		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h sysDictAdminHandler) add() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		dictAdmin.makeAddEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.SysDict],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h sysDictAdminHandler) update() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		dictAdmin.makeUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.SysDict],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h sysDictAdminHandler) del() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		dictAdmin.makeDelEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.DelReq],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h sysDictAdminHandler) batchUpdate() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		dictAdmin.makeBatchUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
 
 type sysDictAdminEndpoint struct {
 }
@@ -77,7 +23,7 @@ type sysDictAdminEndpoint struct {
 func (e sysDictAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*entity.SysDict)
-		id, err := service.SysDictBaseSvc.Add(ctx, param)
+		id, err := service.DictBaseSvc.Add(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "add sys_dict err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -92,7 +38,7 @@ func (e sysDictAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 func (e sysDictAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*entity.SysDict)
-		ok, err := service.SysDictBaseSvc.Update(ctx, param)
+		ok, err := service.DictBaseSvc.Update(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "update sys_dict err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -115,7 +61,7 @@ func (e sysDictAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 			i, _ := strconv.ParseInt(item, 10, 64)
 			return i
 		})
-		err = service.SysDictBaseSvc.DeleteByIDs(ctx, ids)
+		err = service.DictBaseSvc.DeleteByIDs(ctx, ids)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +72,7 @@ func (e sysDictAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 func (e sysDictAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*types.BatchUpdate)
-		ok, err := service.SysDictBaseSvc.BatchUpdate(ctx, param)
+		ok, err := service.DictBaseSvc.BatchUpdate(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "batch update sys_dict err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -141,7 +87,7 @@ func (e sysDictAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 func (e sysDictAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		query := request.(*daox.QueryRecord)
-		pageVO, err := service.SysDictBaseSvc.Query(ctx, query)
+		pageVO, err := service.DictBaseSvc.Query(ctx, query)
 		if err != nil {
 			log.ErrorCtx(ctx, "page query sys_dict err", zap.Error(err))
 			return nil, err

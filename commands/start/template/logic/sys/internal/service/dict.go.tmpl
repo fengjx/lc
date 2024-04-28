@@ -11,10 +11,17 @@ import (
 	"{{.gomod}}/logic/sys/syspub"
 )
 
-var DictSvc = &dictService{}
+var DictSvc = newDictService()
 
 type dictService struct {
 	dictMap map[string][]*syspub.DictDTO
+}
+
+func newDictService() *dictService {
+	inst := &dictService{
+		dictMap: map[string][]*syspub.DictDTO{},
+	}
+	return inst
 }
 
 func (svc *dictService) Refresh(ctx context.Context) {

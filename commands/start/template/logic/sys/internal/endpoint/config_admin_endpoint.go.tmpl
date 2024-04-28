@@ -13,63 +13,9 @@ import (
 	"{{.gomod}}/connom/types"
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/service"
-	"{{.gomod}}/transport/http"
 )
 
 var configAdmin = configAdminEndpoint{}
-
-type configAdminHandler struct {
-}
-
-func (h configAdminHandler) Bind(router *luchen.HTTPServeMux) {
-	router.Sub(http.AdminAPI+"/sys/config", func(sub *luchen.HTTPServeMux) {
-		sub.Handle("/add", h.add())
-		sub.Handle("/update", h.update())
-		sub.Handle("/del", h.del())
-		sub.Handle("/batch-update", h.batchUpdate())
-		sub.Handle("/query", h.query())
-	})
-}
-
-func (h configAdminHandler) query() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		configAdmin.makeQueryEndpoint(),
-		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h configAdminHandler) add() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		configAdmin.makeAddEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.SysConfig],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h configAdminHandler) update() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		configAdmin.makeUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[entity.SysConfig],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h configAdminHandler) del() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		configAdmin.makeDelEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.DelReq],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h configAdminHandler) batchUpdate() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		configAdmin.makeBatchUpdateEndpoint(),
-		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
 
 type configAdminEndpoint struct {
 }
@@ -77,7 +23,7 @@ type configAdminEndpoint struct {
 func (e configAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*entity.SysConfig)
-		id, err := service.SysConfigBaseSvc.Add(ctx, param)
+		id, err := service.ConfigBaseSvc.Add(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "add sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -92,7 +38,7 @@ func (e configAdminEndpoint) makeAddEndpoint() luchen.Endpoint {
 func (e configAdminEndpoint) makeUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*entity.SysConfig)
-		ok, err := service.SysConfigBaseSvc.Update(ctx, param)
+		ok, err := service.ConfigBaseSvc.Update(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "update sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -115,7 +61,7 @@ func (e configAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 			i, _ := strconv.ParseInt(item, 10, 64)
 			return i
 		})
-		err = service.SysConfigBaseSvc.DeleteByIDs(ctx, ids)
+		err = service.ConfigBaseSvc.DeleteByIDs(ctx, ids)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +72,7 @@ func (e configAdminEndpoint) makeDelEndpoint() luchen.Endpoint {
 func (e configAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		param := request.(*types.BatchUpdate)
-		ok, err := service.SysConfigBaseSvc.BatchUpdate(ctx, param)
+		ok, err := service.ConfigBaseSvc.BatchUpdate(ctx, param)
 		if err != nil {
 			log.ErrorCtx(ctx, "batch update sys_config err", zap.Any("param", param), zap.Error(err))
 			return nil, err
@@ -141,7 +87,7 @@ func (e configAdminEndpoint) makeBatchUpdateEndpoint() luchen.Endpoint {
 func (e configAdminEndpoint) makeQueryEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		query := request.(*daox.QueryRecord)
-		pageVO, err := service.SysConfigBaseSvc.Query(ctx, query)
+		pageVO, err := service.ConfigBaseSvc.Query(ctx, query)
 		if err != nil {
 			log.ErrorCtx(ctx, "page query sys_config err", zap.Error(err))
 			return nil, err

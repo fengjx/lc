@@ -20,13 +20,13 @@ import (
 	"{{.gomod}}/logic/sys/internal/data/meta"
 )
 
-var SysUserBaseSvc = &sysUserBaseService{}
+var UserBaseSvc = &userBaseService{}
 
-type sysUserBaseService struct {
+type userBaseService struct {
 }
 
 // Query 分页查询
-func (svc sysUserBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.SysUser], error) {
+func (svc userBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.SysUser], error) {
 	readDB := dao.SysUserDao.GetReadDB()
 	query.TableName = meta.SysUserMeta.TableName()
 	list, page, err := daox.Find[entity.SysUser](ctx, readDB, *query)
@@ -45,7 +45,7 @@ func (svc sysUserBaseService) Query(ctx context.Context, query *daox.QueryRecord
 }
 
 // Add 新增记录
-func (svc sysUserBaseService) Add(ctx context.Context, sysUser *entity.SysUser) (int64, error) {
+func (svc userBaseService) Add(ctx context.Context, sysUser *entity.SysUser) (int64, error) {
 	md5Pwd, salt := svc.genPwd(sysUser.Pwd)
 	sysUser.Salt = salt
 	sysUser.Pwd = md5Pwd
@@ -56,7 +56,7 @@ func (svc sysUserBaseService) Add(ctx context.Context, sysUser *entity.SysUser) 
 }
 
 // Update 更新记录
-func (svc sysUserBaseService) Update(ctx context.Context, sysUser *entity.SysUser) (bool, error) {
+func (svc userBaseService) Update(ctx context.Context, sysUser *entity.SysUser) (bool, error) {
 	return dao.SysUserDao.UpdateContext(ctx, sysUser,
 		meta.SysUserMeta.PrimaryKey(),
 		meta.SysUserMeta.Pwd,
@@ -67,7 +67,7 @@ func (svc sysUserBaseService) Update(ctx context.Context, sysUser *entity.SysUse
 }
 
 // BatchUpdate 批量更新
-func (svc sysUserBaseService) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
+func (svc userBaseService) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
 	for _, row := range param.Rows {
 		var id any
 		attr := map[string]any{}
@@ -95,7 +95,7 @@ func (svc sysUserBaseService) BatchUpdate(ctx context.Context, param *types.Batc
 }
 
 // DeleteByIDs 批量更新
-func (svc sysUserBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
+func (svc userBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
 	_, err := dao.SysUserDao.DeleteByCondContext(ctx, ql.C().And(
 		meta.SysUserMeta.IdIn(ids...),
@@ -109,7 +109,7 @@ func (svc sysUserBaseService) DeleteByIDs(ctx context.Context, ids []int64) erro
 }
 
 // UpdatePwd 修改用户密码
-func (svc sysUserBaseService) UpdatePwd(ctx context.Context, id int64, newPwd string) error {
+func (svc userBaseService) UpdatePwd(ctx context.Context, id int64, newPwd string) error {
 	l := log.GetLogger(ctx).With(zap.Any("id", id))
 	pwd, salt := svc.genPwd(newPwd)
 	_, err := dao.SysUserDao.UpdateFieldContext(ctx, id, map[string]any{
@@ -122,7 +122,7 @@ func (svc sysUserBaseService) UpdatePwd(ctx context.Context, id int64, newPwd st
 	return err
 }
 
-func (svc sysUserBaseService) genPwd(pwd string) (md5Pwd, salt string) {
+func (svc userBaseService) genPwd(pwd string) (md5Pwd, salt string) {
 	if pwd == "" {
 		return
 	}
@@ -134,7 +134,7 @@ func (svc sysUserBaseService) genPwd(pwd string) (md5Pwd, salt string) {
 	return
 }
 
-func (svc sysUserBaseService) Get(ctx context.Context, uid int64) (*entity.SysUser, error) {
+func (svc userBaseService) Get(ctx context.Context, uid int64) (*entity.SysUser, error) {
 	if uid == 0 {
 		return nil, nil
 	}

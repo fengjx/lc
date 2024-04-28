@@ -100,7 +100,7 @@ func NewHandler(e luchen.Endpoint,
 			},
 		},
 	})(e)
-	return luchen.NewHTTPHandler(
+	return luchen.NewHTTPTransportServer(
 		targetEndpoint,
 		dec,
 		enc,

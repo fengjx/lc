@@ -17,13 +17,13 @@ import (
 	"{{.gomod}}/logic/sys/internal/data/meta"
 )
 
-var SysConfigBaseSvc = &sysConfigBaseService{}
+var ConfigBaseSvc = &configBaseService{}
 
-type sysConfigBaseService struct {
+type configBaseService struct {
 }
 
 // Query 分页查询
-func (svc sysConfigBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.SysConfig], error) {
+func (svc configBaseService) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.SysConfig], error) {
 	readDB := dao.SysConfigDao.GetReadDB()
 	query.TableName = meta.SysConfigMeta.TableName()
 	list, page, err := daox.Find[entity.SysConfig](ctx, readDB, *query)
@@ -42,7 +42,7 @@ func (svc sysConfigBaseService) Query(ctx context.Context, query *daox.QueryReco
 }
 
 // Add 新增记录
-func (svc sysConfigBaseService) Add(ctx context.Context, model *entity.SysConfig) (int64, error) {
+func (svc configBaseService) Add(ctx context.Context, model *entity.SysConfig) (int64, error) {
 	return dao.SysConfigDao.SaveContext(ctx, model,
 		meta.SysConfigMeta.Ctime,
 		meta.SysConfigMeta.Utime,
@@ -50,7 +50,7 @@ func (svc sysConfigBaseService) Add(ctx context.Context, model *entity.SysConfig
 }
 
 // Update 更新记录
-func (svc sysConfigBaseService) Update(ctx context.Context, model *entity.SysConfig) (bool, error) {
+func (svc configBaseService) Update(ctx context.Context, model *entity.SysConfig) (bool, error) {
 	return dao.SysConfigDao.UpdateContext(ctx, model,
 		meta.SysConfigMeta.PrimaryKey(),
 		meta.SysConfigMeta.Ctime,
@@ -59,7 +59,7 @@ func (svc sysConfigBaseService) Update(ctx context.Context, model *entity.SysCon
 }
 
 // BatchUpdate 批量更新
-func (svc sysConfigBaseService) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
+func (svc configBaseService) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
 	for _, row := range param.Rows {
 		var id any
 		attr := map[string]any{}
@@ -82,7 +82,7 @@ func (svc sysConfigBaseService) BatchUpdate(ctx context.Context, param *types.Ba
 }
 
 // DeleteByIDs 批量更新
-func (svc sysConfigBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
+func (svc configBaseService) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
 	_, err := dao.SysConfigDao.DeleteByCondContext(ctx, ql.C().And(
 		meta.SysConfigMeta.IdIn(ids...),

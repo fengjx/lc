@@ -11,18 +11,20 @@ import (
 	"{{.gomod}}/logic/sys/syspub"
 )
 
-var ConfigSvc = newSysConfigService()
+var ConfigSvc = newConfigService()
 
-type sysConfigService struct {
+type configService struct {
 	configMap map[string][]*syspub.ConfigDTO
 }
 
-func newSysConfigService() *sysConfigService {
-	inst := &sysConfigService{}
+func newConfigService() *configService {
+	inst := &configService{
+		configMap: make(map[string][]*syspub.ConfigDTO),
+	}
 	return inst
 }
 
-func (svc *sysConfigService) Refresh(ctx context.Context) {
+func (svc *configService) Refresh(ctx context.Context) {
 	list, err := dao.SysConfigDao.ListAll(ctx)
 	if err != nil {
 		log.ErrorCtx(ctx, "list all sys_config err", zap.Error(err))
@@ -36,7 +38,7 @@ func (svc *sysConfigService) Refresh(ctx context.Context) {
 	log.InfofCtx(ctx, "refresh sys_config, size: %d", len(list))
 }
 
-func (svc *sysConfigService) ScopeConfig(scopes ...string) map[string][]*syspub.ConfigDTO {
+func (svc *configService) ScopeConfig(scopes ...string) map[string][]*syspub.ConfigDTO {
 	res := map[string][]*syspub.ConfigDTO{}
 	for _, scope := range scopes {
 		res[scope] = svc.configMap[scope]
@@ -44,6 +46,6 @@ func (svc *sysConfigService) ScopeConfig(scopes ...string) map[string][]*syspub.
 	return res
 }
 
-func (svc *sysConfigService) GetAllConfig() map[string][]*syspub.ConfigDTO {
+func (svc *configService) GetAllConfig() map[string][]*syspub.ConfigDTO {
 	return svc.configMap
 }

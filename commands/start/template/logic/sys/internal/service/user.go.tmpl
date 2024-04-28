@@ -12,12 +12,12 @@ import (
 	"{{.gomod}}/logic/sys/internal/data/meta"
 )
 
-var UserSvc = &sysUserService{}
+var UserSvc = &userService{}
 
-type sysUserService struct {
+type userService struct {
 }
 
-func (svc sysUserService) GetByUsername(ctx context.Context, username string) (*entity.SysUser, error) {
+func (svc userService) GetByUsername(ctx context.Context, username string) (*entity.SysUser, error) {
 	user := &entity.SysUser{}
 	ok, err := dao.SysUserDao.GetByColumn(daox.OfKv(meta.SysUserMeta.Username, username), user)
 	if err != nil {

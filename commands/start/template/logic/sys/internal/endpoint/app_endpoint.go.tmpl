@@ -8,27 +8,9 @@ import (
 	"{{.gomod}}/logic/sys/internal/data/consts"
 	"{{.gomod}}/logic/sys/internal/protocol"
 	"{{.gomod}}/logic/sys/internal/service"
-	"{{.gomod}}/transport/http"
 )
 
-var (
-	config = configEndpoint{}
-)
-
-type configHandler struct {
-}
-
-func (h configHandler) Bind(router *luchen.HTTPServeMux) {
-	router.Handle(http.OpenAPI+"/app/data", h.fetchData())
-}
-
-func (h configHandler) fetchData() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		config.MakeFetchDataEndpoint(),
-		luchen.NopHTTPRequestDecoder,
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
+var config = configEndpoint{}
 
 type configEndpoint struct {
 }

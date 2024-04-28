@@ -15,34 +15,9 @@ import (
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/protocol"
 	"{{.gomod}}/logic/sys/internal/service"
-	"{{.gomod}}/transport/http"
 )
 
 var login = loginEndpoint{}
-
-type loginHandler struct {
-}
-
-func (h *loginHandler) Bind(router *luchen.HTTPServeMux) {
-	router.Handle(http.OpenAPI+"/sys/login", h.login())
-	router.Handle(http.AdminAPI+"/sys/user/info", h.userInfo())
-}
-
-func (h *loginHandler) login() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		login.makeLoginEndpoint(),
-		luchen.DecodeHTTPJSONRequest[protocol.LoginReq],
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
-
-func (h *loginHandler) userInfo() *luchen.HTTPTransportServer {
-	return http.NewHandler(
-		login.makeUserInfoEndpoint(),
-		luchen.NopHTTPRequestDecoder,
-		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
-	)
-}
 
 type loginEndpoint struct {
 }
@@ -84,7 +59,7 @@ func (e loginEndpoint) makeLoginEndpoint() luchen.Endpoint {
 func (e loginEndpoint) makeUserInfoEndpoint() luchen.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		uid := current.UID(ctx)
-		user, err := service.SysUserBaseSvc.Get(ctx, uid)
+		user, err := service.UserBaseSvc.Get(ctx, uid)
 		if err != nil {
 			log.ErrorCtx(ctx, "get user_info err", zap.Int64("uid", uid), zap.Error(err))
 			return nil, err
