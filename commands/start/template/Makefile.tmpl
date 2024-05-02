@@ -18,7 +18,7 @@ build: build-go
 ### build-go:			构建 golang 包
 build-go:
 	rm -rf ${DIST_PATH}
-	GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -trimpath -tags=jsoniter -mod=readonly -v -o $(DIST_PATH)/${BINARY_NAME} main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -trimpath -mod=readonly -v -o $(DIST_PATH)/${BINARY_NAME} main.go
 	cp -rf conf $(DIST_PATH)
 	cp -rf static $(DIST_PATH)
 
@@ -26,7 +26,7 @@ build-go:
 .PHONY: migrate
 ### migrate:			同步数据库生成代码
 migrate:
-	@export USE_PRE=1 && lc migrate -c .gen/config.yml
+	@export USE_PRE=1 && lc migrate -c tools/gen/config.yml
 	@echo "migrate done"
 
 .PHONY: init

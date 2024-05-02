@@ -1,14 +1,14 @@
 #!/bin/bash
 
-git_url="https://github.com/fengjx/glca.git"
+git_url="https://github.com/fengjx/lc-kit.git"
 git_branch="start"
 remote_template="template_remote"
 target_template="template"
 
 # 指定替换的 go module path 变量
-module_replace="github\.com\/fengjx\/glca"
+module_replace="github\.com\/fengjx\/lc-kit"
 module_placeholder="{{.gomod}}"
-proj_replace="glca"
+proj_replace="lc-kit"
 proj_placeholder="{{.proj}}"
 
 

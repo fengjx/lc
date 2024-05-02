@@ -5,7 +5,7 @@ ENV APP_NAME={{.proj}}
 WORKDIR /app
 COPY . /app
 RUN go mod download
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -trimpath -tags=jsoniter -mod=readonly -a -installsuffix cgo -v -o ${APP_NAME} main.go
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -trimpath -mod=readonly -a -installsuffix cgo -v -o ${APP_NAME} main.go
 
 FROM alpine:3.19
 RUN apk --no-cache add ca-certificates bash curl
