@@ -2,12 +2,8 @@ package dao
 {{$ObjName := GonicCase .Table.Name}}
 {{$VarObjName := FirstLower $ObjName}}
 import (
-	"reflect"
-
     "github.com/fengjx/daox"
 
-    "{{.Gomod}}/integration/db"
-    "{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
     "{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
