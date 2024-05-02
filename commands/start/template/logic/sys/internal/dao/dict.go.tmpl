@@ -2,12 +2,10 @@ package dao
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/fengjx/daox"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 
-	"{{.gomod}}/integration/db"
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/data/enum"
 	"{{.gomod}}/logic/sys/internal/data/meta"
@@ -25,12 +23,7 @@ type sysDictDao struct {
 
 func newSysDictDao() *sysDictDao {
 	inst := &sysDictDao{}
-	inst.Dao = daox.NewDAO(
-		db.GetDefaultDB(),
-		"sys_dict",
-		"id",
-		reflect.TypeOf(&entity.SysDict{}),
-	)
+	inst.Dao = daox.NewDaoByMeta(meta.SysDictMeta)
 	return inst
 }
 

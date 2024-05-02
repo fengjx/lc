@@ -2,13 +2,11 @@ package dao
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/fengjx/daox"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 	"github.com/samber/lo"
 
-	"{{.gomod}}/integration/db"
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/data/enum"
 	"{{.gomod}}/logic/sys/internal/data/meta"
@@ -26,12 +24,7 @@ type sysMenuDao struct {
 
 func newSysMenuDao() *sysMenuDao {
 	inst := &sysMenuDao{}
-	inst.Dao = daox.NewDAO(
-		db.GetDefaultDB(),
-		"sys_menu",
-		"id",
-		reflect.TypeOf(&entity.SysMenu{}),
-	)
+	inst.Dao = daox.NewDaoByMeta(meta.SysMenuMeta)
 	return inst
 }
 

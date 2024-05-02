@@ -34,6 +34,10 @@ func (m SysMenuM) TableName() string {
     return "sys_menu"
 }
 
+func (m SysMenuM) IsAutoIncrement() bool {
+    return true
+}
+
 func (m SysMenuM) PrimaryKey() string {
     return "id"
 }

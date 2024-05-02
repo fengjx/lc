@@ -28,6 +28,10 @@ func (m SysConfigM) TableName() string {
     return "sys_config"
 }
 
+func (m SysConfigM) IsAutoIncrement() bool {
+    return true
+}
+
 func (m SysConfigM) PrimaryKey() string {
     return "id"
 }

@@ -99,11 +99,12 @@
         "actions": [
           {
             "type": "button",
-            "actionType": "dialog",
+            "actionType": "drawer",
             "icon": "fa fa-plus",
             "label": "新增",
-            "dialog": {
+            "drawer": {
               "title": "新增",
+              "size": "xl",
               "body": {
                 "type": "form",
                 "name": "sample-edit-form",
@@ -239,10 +240,11 @@
             {
               "type": "button",
               "icon": "fa fa-eye",
-              "actionType": "dialog",
+              "actionType": "drawer",
               "tooltip": "查看",
-              "dialog": {
+              "drawer": {
                 "title": "用户信息",
+                "size": "xl",
                 "body": {
                   "type": "form",
                   "body": [
@@ -302,6 +304,7 @@
               "actionType": "drawer",
               "drawer": {
                 "title": "修改",
+                "size": "xl",
                 "body": {
                   "type": "form",
                   "api": {

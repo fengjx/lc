@@ -2,12 +2,10 @@ package dao
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/fengjx/daox"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 
-	"{{.gomod}}/integration/db"
 	"{{.gomod}}/logic/sys/internal/data/entity"
 	"{{.gomod}}/logic/sys/internal/data/enum"
 	"{{.gomod}}/logic/sys/internal/data/meta"
@@ -25,12 +23,7 @@ type sysConfigDao struct {
 
 func newSysConfigDao() *sysConfigDao {
 	inst := &sysConfigDao{}
-	inst.Dao = daox.NewDAO(
-		db.GetDefaultDB(),
-		"sys_config",
-		"id",
-		reflect.TypeOf(&entity.SysConfig{}),
-	)
+	inst.Dao = daox.NewDaoByMeta(meta.SysConfigMeta)
 	return inst
 }
 

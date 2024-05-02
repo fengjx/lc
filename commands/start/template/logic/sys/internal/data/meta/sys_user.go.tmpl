@@ -32,6 +32,10 @@ func (m SysUserM) TableName() string {
     return "sys_user"
 }
 
+func (m SysUserM) IsAutoIncrement() bool {
+    return true
+}
+
 func (m SysUserM) PrimaryKey() string {
     return "id"
 }

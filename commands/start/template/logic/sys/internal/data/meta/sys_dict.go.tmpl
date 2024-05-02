@@ -29,6 +29,10 @@ func (m SysDictM) TableName() string {
     return "sys_dict"
 }
 
+func (m SysDictM) IsAutoIncrement() bool {
+    return true
+}
+
 func (m SysDictM) PrimaryKey() string {
     return "id"
 }

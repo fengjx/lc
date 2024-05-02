@@ -8,6 +8,7 @@ import (
 
     "{{.Gomod}}/integration/db"
     "{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/entity"
+    "{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
 var {{$ObjName}}Dao *{{$VarObjName}}Dao
@@ -22,11 +23,6 @@ type {{$VarObjName}}Dao struct {
 
 func new{{$ObjName}}Dao() *{{$VarObjName}}Dao {
     inst := &{{$VarObjName}}Dao{}
-    inst.Dao = daox.NewDAO(
-        db.GetDefaultDB(),
-        "{{.Table.Name}}",
-        "{{.Table.PrimaryKey.Name}}",
-        reflect.TypeOf(&entity.{{$ObjName}}{}),
-    )
+    inst.Dao = daox.NewDaoByMeta(meta.{{$ObjName}}Meta)
 	return inst
 }

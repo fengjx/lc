@@ -1,13 +1,9 @@
 package dao
 
-
 import (
-	"reflect"
+	"github.com/fengjx/daox"
 
-    "github.com/fengjx/daox"
-
-    "{{.gomod}}/integration/db"
-    "{{.gomod}}/logic/sys/internal/data/entity"
+	"{{.gomod}}/logic/sys/internal/data/meta"
 )
 
 var SysUserDao *sysUserDao
@@ -21,12 +17,7 @@ type sysUserDao struct {
 }
 
 func newSysUserDao() *sysUserDao {
-    inst := &sysUserDao{}
-    inst.Dao = daox.NewDAO(
-        db.GetDefaultDB(),
-        "sys_user",
-        "id",
-        reflect.TypeOf(&entity.SysUser{}),
-    )
+	inst := &sysUserDao{}
+	inst.Dao = daox.NewDaoByMeta(meta.SysUserMeta)
 	return inst
 }
