@@ -60,7 +60,7 @@ var flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "template",
 		Aliases: []string{"t"},
-		Usage:   "使用模板，可选参数：lckit, simple，默认 simple",
+		Usage:   "使用模板，可选参数：lckit, simple",
 		Value:   "simple",
 	},
 }
@@ -100,8 +100,9 @@ func action(ctx *cli.Context) error {
 			color.Red("同步模板文件失败，%s", err.Error())
 			return err
 		}
-		tmplDir = filepath.Join(unzipDir, "template", "start")
+		tmplDir = filepath.Join(unzipDir, tmplDir)
 	}
+	color.Green("使用模板：%s", tmplType)
 	fg := &filegen.FileGen{
 		EmbedFS:     eFS,
 		BaseTmplDir: tmplDir,
