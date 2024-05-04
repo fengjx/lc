@@ -100,7 +100,7 @@ func action(ctx *cli.Context) error {
 			color.Red("同步模板文件失败，%s", err.Error())
 			return err
 		}
-		tmplDir = filepath.Join(unzipDir, tmplDir)
+		tmplDir = filepath.Join(unzipDir, "template", "start", tmplType)
 	}
 	color.Green("使用模板：%s", tmplType)
 	fg := &filegen.FileGen{
