@@ -3,7 +3,7 @@
 git_url="https://github.com/fengjx/lc-kit.git"
 git_branch="start"
 remote_template="template_remote"
-target_template="template"
+target_template="template/lckit"
 
 # 指定替换的 go module path 变量
 module_replace="github\.com\/fengjx\/lc-kit"

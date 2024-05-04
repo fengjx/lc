@@ -1,0 +1,7 @@
+server:
+  http:
+    server-name: "{{.proj}}"
+    listen: ":8080"
+  grpc:
+    server-name: "rpc.{{.proj}}"
+    listen: ":8088"

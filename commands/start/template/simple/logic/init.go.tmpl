@@ -1,0 +1,13 @@
+package logic
+
+import (
+	"github.com/fengjx/luchen"
+
+	"{{.gomod}}/logic/calc"
+	"{{.gomod}}/logic/hello"
+)
+
+func Init(hs *luchen.HTTPServer, gs *luchen.GRPCServer) {
+	hello.Init(hs, gs)
+	calc.Init(hs, gs)
+}
