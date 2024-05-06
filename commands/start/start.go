@@ -17,7 +17,7 @@ import (
 //go:embed template/*
 var embedFS embed.FS
 
-const tipsLckit = `
+const tipsLucky = `
 项目创建完成，执行一下步骤启动服务
 1. cd %s
 2. go mod tidy
@@ -34,9 +34,9 @@ const tipsSimple = `
 `
 
 var tmplTips = map[string]string{
-	"lucky":     tipsLckit,
-	"discovery": tipsSimple,
-	"httponly":  tipsSimple,
+	"lucky":    tipsLucky,
+	"micro":    tipsSimple,
+	"httponly": tipsSimple,
 }
 
 var Command = &cli.Command{
@@ -61,7 +61,7 @@ var flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "template",
 		Aliases: []string{"t"},
-		Usage:   "使用模板，可选参数：lucky, httponly, discovery",
+		Usage:   "使用模板，可选参数：lucky, httponly, micro",
 		Value:   "httponly",
 	},
 }

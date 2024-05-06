@@ -5,7 +5,7 @@ set -e
 help="必须指定模板名称和目标名称
 eg:
   bash sync-example.sh httponly httponly
-  bash sync-example.sh quickstart discovery
+  bash sync-example.sh quickstart micro
 "
 
 if [ $# -lt 2 ]; then
