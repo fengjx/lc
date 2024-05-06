@@ -27,6 +27,7 @@ func LineString(str string) string {
 	return str
 }
 
+// FirstUpper 首字母大写
 func FirstUpper(str string) string {
 	if str == "" {
 		return ""
@@ -42,6 +43,7 @@ func FirstUpper(str string) string {
 	return b2s(newstr)
 }
 
+// FirstLower 首字母小写
 func FirstLower(str string) string {
 	if str == "" {
 		return ""
@@ -73,6 +75,7 @@ func SnakeCase(str string) string {
 	return b2s(newstr)
 }
 
+// TitleCase 下划线转驼峰
 func TitleCase(str string) string {
 	newstr := make([]byte, 0, len(str))
 	upNextChar := true
@@ -98,6 +101,7 @@ func TitleCase(str string) string {
 	return b2s(newstr)
 }
 
+// GonicCase golang 风格的驼峰命名
 func GonicCase(str string) string {
 	newstr := make([]rune, 0)
 	str = strings.ToLower(str)

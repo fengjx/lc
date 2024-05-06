@@ -44,6 +44,7 @@ func ContainsString(collection []string, element string) bool {
 	return false
 }
 
+// IsLastIndex 是否是最后一个元素
 func IsLastIndex(idx int, s any) bool {
 	return idx == reflect.ValueOf(s).Len()-1
 }
