@@ -58,6 +58,10 @@ func action(ctx *cli.Context) error {
 		color.Red("缺少配置[target.custom.gomod]")
 		return nil
 	}
+	if config.Target.Custom.OutDir == "" {
+		config.Target.Custom.OutDir = "./"
+	}
+
 	dsnCfg, err := mysql.ParseDSN(config.DS.Dsn)
 	if err != nil {
 		color.Red("数据库dsn配置错误：%s, %s", config.DS.Dsn, err.Error())
