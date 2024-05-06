@@ -4,7 +4,7 @@ git_url="https://github.com/fengjx/luchen.git"
 git_branch="master"
 remote_template="template_remote"
 remote_template_dir="${remote_template}/_example/quickstart"
-target_template="template/simple"
+target_template="template/discovery"
 
 # 指定替换的 go module path 变量
 module_replace="github\.com\/fengjx\/luchen\/example\/quickstart"

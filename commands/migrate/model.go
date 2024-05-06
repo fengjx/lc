@@ -16,8 +16,6 @@ type Var map[string]string
 type TableConfig struct {
 	Module     string `yaml:"module"`
 	SimpleName string `yaml:"simple-name"`
-	IsTime     bool   `yaml:"is-time"`
-	InputType  string `yaml:"input-type"`
 	UseAdmin   *bool  `yaml:"use-admin"`
 	Var        Var    `yaml:"var"`
 }
@@ -54,6 +52,7 @@ type Column struct {
 	SQLType      string
 	Comment      string
 	IsPrimaryKey bool
+	IsTimeType   bool
 	DefaultValue string
 	Extra        string
 }

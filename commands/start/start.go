@@ -34,8 +34,9 @@ const tipsSimple = `
 `
 
 var tmplTips = map[string]string{
-	"lckit":  tipsLckit,
-	"simple": tipsSimple,
+	"lucky":     tipsLckit,
+	"discovery": tipsSimple,
+	"httponly":  tipsSimple,
 }
 
 var Command = &cli.Command{
@@ -60,8 +61,8 @@ var flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "template",
 		Aliases: []string{"t"},
-		Usage:   "使用模板，可选参数：lckit, simple",
-		Value:   "simple",
+		Usage:   "使用模板，可选参数：lucky, httponly, discovery",
+		Value:   "httponly",
 	},
 }
 
