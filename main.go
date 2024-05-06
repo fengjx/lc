@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -29,7 +28,7 @@ var Metadata = map[string]interface{}{
 func main() {
 	if version == "" {
 		// go install 安装的没有预编译注入版本号
-		version = strings.Join([]string{"v1.0.0", common.GitInfo.Branch, common.GitInfo.Hash}, "-")
+		version = common.GitInfo.GetVersion()
 	}
 	app := cli.NewApp()
 	app.Name = "lc"
