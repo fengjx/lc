@@ -3,9 +3,12 @@ package calc
 import (
 	"github.com/fengjx/luchen"
 
+	"{{.gomod}}/logic/calc/calcpub"
 	"{{.gomod}}/logic/calc/internal/endpoint"
+	"{{.gomod}}/logic/calc/internal/provider"
 )
 
 func Init(hs *luchen.HTTPServer, gs *luchen.GRPCServer) {
+	calcpub.SetCalcAPI(provider.CalcProvider{})
 	endpoint.Init(hs, gs)
 }
