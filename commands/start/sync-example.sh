@@ -1,16 +1,35 @@
 #!/bin/bash
 
+set -e
+
+help="必须指定模板名称和目标名称
+eg:
+  bash sync-example.sh httponly httponly
+  bash sync-example.sh quickstart discovery
+"
+
+if [ $# -lt 2 ]; then
+    echo "$help"
+    exit 1
+fi
+
+
+src_proj=$1
+dist_proj=$2
+
+echo "src_proj: $src_proj, dist_proj: $dist_proj"
+
 git_url="https://github.com/fengjx/luchen.git"
 git_branch="master"
 remote_template="template_remote"
-remote_template_dir="${remote_template}/_example/quickstart"
-target_template="template/discovery"
+remote_template_dir="${remote_template}/_example/$src_proj"
+target_template="template/$dist_proj"
 
 # 指定替换的 go module path 变量
-module_replace="github\.com\/fengjx\/luchen\/example\/quickstart"
+module_replace="github\.com\/fengjx\/luchen\/example\/$src_proj"
 module_replace2="github\.com\/fengjx\/luchen\/example"
 module_placeholder="{{.gomod}}"
-proj_replace="quickstart"
+proj_replace="$dist_proj"
 proj_placeholder="{{.proj}}"
 
 echo "拉取模板代码"

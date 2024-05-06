@@ -72,7 +72,7 @@ create table if not exists sys_menu
     default charset = utf8mb4 comment '系统菜单表';
 
 INSERT IGNORE INTO sys_user (username, pwd, salt, email, nickname, avatar, status)
-VALUES ('admin', '79e915ab394c5bea4b17de86b60283f7', 'abkCeW', 'fengjianxin2012@gmail.com', '超级管理员', '', 'normal');
+VALUES ('admin', '8f7bfb0f6b2ecea45d1e9d6645372abb', 'JWShJt', 'fengjianxin2012@gmail.com', '超级管理员', '', 'normal');
 
 INSERT IGNORE INTO sys_menu (id, parent_id, name, icon, path, redirect, schema_api, sort_no, visible, is_sys, status,
                              remark)

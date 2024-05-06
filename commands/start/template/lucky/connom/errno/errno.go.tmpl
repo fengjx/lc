@@ -15,6 +15,6 @@ var (
 // user
 
 var (
-	PasswordErr     = &luchen.Errno{HTTPCode: 200, Code: 10000, Msg: "密码错误"}
-	UserNotExistErr = &luchen.Errno{HTTPCode: 200, Code: 10001, Msg: "用户不存在"}
+	PasswordErr     = &luchen.Errno{HTTPCode: 401, Code: 10000, Msg: "密码错误"}
+	UserNotExistErr = &luchen.Errno{HTTPCode: 401, Code: 10001, Msg: "用户不存在"}
 )

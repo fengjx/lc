@@ -1,14 +1,16 @@
 #!/bin/bash
 
-git_url="https://github.com/fengjx/lc-kit.git"
+set -e
+
+git_url="https://github.com/fengjx/lucky.git"
 git_branch="start"
 remote_template="template_remote"
-target_template="template/lckit"
+target_template="template/lucky"
 
 # 指定替换的 go module path 变量
-module_replace="github\.com\/fengjx\/lc-kit"
+module_replace="github\.com\/fengjx\/lucky"
 module_placeholder="{{.gomod}}"
-proj_replace="lc-kit"
+proj_replace="lucky"
 proj_placeholder="{{.proj}}"
 
 

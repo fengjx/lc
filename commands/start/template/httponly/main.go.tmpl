@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,12 +13,11 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
 	httpServer := http.GetServer()
-	logic.Init(ctx, httpServer)
+	logic.Init(httpServer)
 	luchen.Start(httpServer)
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	<-quit
