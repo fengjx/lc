@@ -10,7 +10,9 @@
 
 ## 相关项目
 
-- [luchen](https://github.com/fengjx/luchen) 基于 go-kit 封装的微服务框架
-- [lucky](https://github.com/fengjx/lucky) 基于`luchen`开发的快速开发平台，通过命令生成crud代码
-- [lucky-web](https://github.com/fengjx/lucky-web) 基于[amis](https://github.com/baidu/amis)开发的低代码后台系统，通过json编写前端页面
+- [lucky](https://github.com/fengjx/lucky) 后端工程
+- [lucky-web](https://github.com/fengjx/lucky-web) 前端工程
+- [lc](https://github.com/fengjx/lc) cli 工具
+- [luchen](https://github.com/fengjx/luchen) 基础框架
+- [daox](https://github.com/fengjx/daox) 数据库访问辅助类库
 
