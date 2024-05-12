@@ -98,10 +98,11 @@ func action(ctx *cli.Context) error {
 	} else {
 		unzipDir, err := common.SyncTemplate(rctx)
 		if err != nil {
-			color.Red("同步模板文件失败，%s", err.Error())
-			return err
+			color.Red("更新模板文件失败，使用内置模板，%s", err.Error())
+			eFS = &embedFS
+		} else {
+			tmplDir = filepath.Join(unzipDir, "template", "start", tmplType)
 		}
-		tmplDir = filepath.Join(unzipDir, "template", "start", tmplType)
 	}
 	color.Green("使用模板：%s", tmplType)
 	fg := &filegen.FileGen{

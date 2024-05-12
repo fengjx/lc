@@ -87,10 +87,11 @@ func action(ctx *cli.Context) error {
 	} else {
 		unzipDir, err := common.SyncTemplate(rctx)
 		if err != nil {
-			color.Red("同步模板文件失败，%s", err.Error())
-			panic(err)
+			color.Red("更新模板文件失败，使用内置模板，%s", err.Error())
+			eFS = &embedFS
+		} else {
+			tmplDir = filepath.Join(unzipDir, "template", "migrate")
 		}
-		tmplDir = filepath.Join(unzipDir, "template", "migrate")
 	}
 
 	for tableName := range config.Target.Tables {
