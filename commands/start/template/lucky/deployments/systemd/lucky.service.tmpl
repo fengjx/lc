@@ -1,0 +1,17 @@
+[Unit]
+# 服务名称，可自定义
+Description = {{.proj}} server
+After = network.target syslog.target
+Wants = network.target
+
+[Service]
+Type = simple
+User = fengjx
+EnvironmentFile = /home/fengjx/app/{{.proj}}/env
+# 启动命令
+ExecStart = /home/fengjx/app/{{.proj}}/bin/{{.proj}} -c /home/fengjx/app/{{.proj}}/bin/app-demo.yml
+Restart = always
+RestartSec = 3
+
+[Install]
+WantedBy = multi-user.target
