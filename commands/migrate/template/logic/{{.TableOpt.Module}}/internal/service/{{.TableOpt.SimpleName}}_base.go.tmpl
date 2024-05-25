@@ -1,10 +1,10 @@
 package service
 {{$ObjName := GonicCase .Table.Name}}
 {{$VarObjName := FirstLower $ObjName}}
-{{$SimpleName := .TableOpt.SimpleName}}
-{{$SimpleVarName := FirstUpper .TableOpt.SimpleName}}
-{{$ServiceName := print $SimpleName "BaseService"}}
-{{$ServiceVarName := print $SimpleVarName "BaseSvc"}}
+{{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
+{{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
+{{$ServiceName := print $SimpleFirstLower "BaseService"}}
+{{$ServiceVarName := print $SimpleGonicCase "BaseSvc"}}
 import (
 	"context"
 
@@ -22,7 +22,11 @@ import (
 	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
-var {{$ServiceVarName}} = &{{$ServiceName}}{}
+var {{$ServiceVarName}} *{{$ServiceName}}
+
+func init() {
+	{{$ServiceVarName}} = &{{$ServiceName}}{}
+}
 
 type {{$ServiceName}} struct {
 }

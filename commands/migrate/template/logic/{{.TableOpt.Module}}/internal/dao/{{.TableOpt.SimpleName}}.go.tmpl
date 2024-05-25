@@ -1,24 +1,28 @@
 package dao
 {{$ObjName := GonicCase .Table.Name}}
 {{$VarObjName := FirstLower $ObjName}}
+{{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
+{{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
+{{$DaoName := print $SimpleFirstLower "Dao"}}
+{{$DaoVarName := print $SimpleGonicCase "Dao"}}
 import (
     "github.com/fengjx/daox"
 
     "{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
-var {{$ObjName}}Dao *{{$VarObjName}}Dao
+var {{$DaoVarName}} *{{$DaoName}}
 
 func init() {
-	{{$ObjName}}Dao = new{{$ObjName}}Dao()
+	{{$DaoVarName}} = new{{FirstUpper $DaoName}}()
 }
 
-type {{$VarObjName}}Dao struct {
+type {{$DaoName}} struct {
 	*daox.Dao
 }
 
-func new{{$ObjName}}Dao() *{{$VarObjName}}Dao {
-    inst := &{{$VarObjName}}Dao{}
+func new{{FirstUpper $DaoName}}() *{{$DaoVarName}} {
+    inst := &{{$DaoName}}{}
     inst.Dao = daox.NewDaoByMeta(meta.{{$ObjName}}Meta)
 	return inst
 }
