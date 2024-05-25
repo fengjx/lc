@@ -21,7 +21,7 @@ type {{$DaoName}} struct {
 	*daox.Dao
 }
 
-func new{{FirstUpper $DaoName}}() *{{$DaoVarName}} {
+func new{{FirstUpper $DaoName}}() *{{$DaoName}} {
     inst := &{{$DaoName}}{}
     inst.Dao = daox.NewDaoByMeta(meta.{{$ObjName}}Meta)
 	return inst
