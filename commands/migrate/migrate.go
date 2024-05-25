@@ -96,6 +96,10 @@ func action(ctx *cli.Context) error {
 
 	for tableName := range config.Target.Tables {
 		table := loadTableMeta(db, dsnCfg.DBName, tableName)
+		if table.Name == "" {
+			color.Red("表[%s]未创建", tableName)
+			continue
+		}
 		color.Green("[%s %s]", table.Name, table.Comment)
 		newGen(tmplDir, eFS, config, table).Gen()
 	}
@@ -220,6 +224,10 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 	if tableOpt.UseAdmin == nil {
 		tableOpt.UseAdmin = &config.Target.Custom.UseAdmin
 	}
+	if tableOpt.SimpleName == "" {
+		tableOpt.SimpleName = table.Name
+	}
+	tableOpt.SimpleName = kit.SnakeCase(tableOpt.SimpleName)
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,
 		"TagName":  config.Target.Custom.TagName,
