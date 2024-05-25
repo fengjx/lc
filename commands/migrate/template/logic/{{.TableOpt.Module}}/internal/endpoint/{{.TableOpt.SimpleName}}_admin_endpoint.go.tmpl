@@ -1,11 +1,10 @@
 package endpoint
 {{$ObjName := GonicCase .Table.Name}}
-{{$VarObjName := FirstLower $ObjName}}
 {{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
 {{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
-{{$ServiceName := print $SimpleFirstLower "BaseService"}}
 {{$ServiceVarName := print $SimpleGonicCase "BaseSvc"}}
 {{$EndpointName := print $SimpleFirstLower "AdminEndpoint"}}
+{{$EndpointVarName := print $SimpleFirstLower "Admin"}}
 import (
 	"context"
     "strconv"
@@ -21,7 +20,7 @@ import (
 	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/service"
 )
 
-var {{$SimpleFirstLower}}Admin = {{$EndpointName}}{}
+var {{$EndpointVarName}} = {{$EndpointName}}{}
 
 type {{$EndpointName}} struct {
 }

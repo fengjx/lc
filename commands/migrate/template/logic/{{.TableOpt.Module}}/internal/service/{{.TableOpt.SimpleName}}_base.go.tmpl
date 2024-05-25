@@ -1,6 +1,5 @@
 package service
 {{$ObjName := GonicCase .Table.Name}}
-{{$VarObjName := FirstLower $ObjName}}
 {{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
 {{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
 {{$DaoVarName := print $SimpleGonicCase "Dao"}}

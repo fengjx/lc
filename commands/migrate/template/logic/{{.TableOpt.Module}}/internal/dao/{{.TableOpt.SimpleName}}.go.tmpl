@@ -1,6 +1,5 @@
 package dao
 {{$ObjName := GonicCase .Table.Name}}
-{{$VarObjName := FirstLower $ObjName}}
 {{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
 {{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
 {{$DaoName := print $SimpleFirstLower "Dao"}}
