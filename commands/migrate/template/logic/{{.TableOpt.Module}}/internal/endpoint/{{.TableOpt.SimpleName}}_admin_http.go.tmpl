@@ -44,7 +44,7 @@ func (h {{$HandlerName}}) add() *luchen.HTTPTransportServer {
 
 func (h {{$HandlerName}}) update() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{$EndpointVarName}}Admin.makeUpdateEndpoint(),
+		{{$EndpointVarName}}.makeUpdateEndpoint(),
 		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
