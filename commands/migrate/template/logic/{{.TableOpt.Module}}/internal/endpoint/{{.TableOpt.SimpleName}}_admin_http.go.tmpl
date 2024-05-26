@@ -1,8 +1,9 @@
 package endpoint
 {{$ObjName := GonicCase .Table.Name}}
-{{$VarObjName := FirstLower $ObjName}}
-{{$SimpleName := .TableOpt.SimpleName}}
-{{$HandlerName := print $SimpleName "AdminHandler"}}
+{{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
+{{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
+{{$HandlerName := print $SimpleFirstLower "AdminHandler"}}
+{{$EndpointVarName := print $SimpleFirstLower "Admin"}}
 import (
 	"github.com/fengjx/daox"
     "github.com/fengjx/luchen"
@@ -27,7 +28,7 @@ func (h {{$HandlerName}}) Bind(router *luchen.HTTPServeMux) {
 
 func (h {{$HandlerName}}) query() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeQueryEndpoint(),
+		{{$EndpointVarName}}.makeQueryEndpoint(),
 		luchen.DecodeHTTPJSONRequest[daox.QueryRecord],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -35,7 +36,7 @@ func (h {{$HandlerName}}) query() *luchen.HTTPTransportServer {
 
 func (h {{$HandlerName}}) add() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeAddEndpoint(),
+		{{$EndpointVarName}}.makeAddEndpoint(),
 		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -43,7 +44,7 @@ func (h {{$HandlerName}}) add() *luchen.HTTPTransportServer {
 
 func (h {{$HandlerName}}) update() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeUpdateEndpoint(),
+		{{$EndpointVarName}}.makeUpdateEndpoint(),
 		luchen.DecodeHTTPJSONRequest[entity.{{$ObjName}}],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -51,7 +52,7 @@ func (h {{$HandlerName}}) update() *luchen.HTTPTransportServer {
 
 func (h {{$HandlerName}}) del() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeDelEndpoint(),
+		{{$EndpointVarName}}.makeDelEndpoint(),
 		luchen.DecodeHTTPJSONRequest[types.DelReq],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)
@@ -59,7 +60,7 @@ func (h {{$HandlerName}}) del() *luchen.HTTPTransportServer {
 
 func (h {{$HandlerName}}) batchUpdate() *luchen.HTTPTransportServer {
 	return http.NewHandler(
-		{{.TableOpt.SimpleName}}Admin.makeBatchUpdateEndpoint(),
+		{{$EndpointVarName}}.makeBatchUpdateEndpoint(),
 		luchen.DecodeHTTPJSONRequest[types.BatchUpdate],
 		luchen.EncodeHTTPJSONResponse(http.ResponseWrapper),
 	)

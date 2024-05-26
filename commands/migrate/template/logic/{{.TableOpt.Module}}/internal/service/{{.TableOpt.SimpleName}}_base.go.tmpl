@@ -1,10 +1,10 @@
 package service
 {{$ObjName := GonicCase .Table.Name}}
-{{$VarObjName := FirstLower $ObjName}}
-{{$SimpleName := .TableOpt.SimpleName}}
-{{$SimpleVarName := FirstUpper .TableOpt.SimpleName}}
-{{$ServiceName := print $SimpleName "BaseService"}}
-{{$ServiceVarName := print $SimpleVarName "BaseSvc"}}
+{{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
+{{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
+{{$DaoVarName := print $SimpleGonicCase "Dao"}}
+{{$ServiceName := print $SimpleFirstLower "BaseService"}}
+{{$ServiceVarName := print $SimpleGonicCase "BaseSvc"}}
 import (
 	"context"
 
@@ -22,14 +22,18 @@ import (
 	"{{.Gomod}}/logic/{{.TableOpt.Module}}/internal/data/meta"
 )
 
-var {{$ServiceVarName}} = &{{$ServiceName}}{}
+var {{$ServiceVarName}} *{{$ServiceName}}
+
+func init() {
+	{{$ServiceVarName}} = &{{$ServiceName}}{}
+}
 
 type {{$ServiceName}} struct {
 }
 
 // Query 分页查询
 func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.{{$ObjName}}], error) {
-	readDB := dao.{{$ObjName}}Dao.GetReadDB()
+	readDB := dao.{{$DaoVarName}}.GetReadDB()
 	query.TableName = meta.{{$ObjName}}Meta.TableName()
 	list, page, err := daox.Find[entity.{{$ObjName}}](ctx, readDB, *query)
 	if err != nil {
@@ -48,12 +52,12 @@ func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) 
 
 // Add 新增记录
 func (svc {{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) (int64, error) {
-	return dao.{{$ObjName}}Dao.SaveContext(ctx, model)
+	return dao.{{$DaoVarName}}.SaveContext(ctx, model)
 }
 
 // Update 更新记录
 func (svc {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
-	return dao.{{$ObjName}}Dao.UpdateContext(ctx, model,
+	return dao.{{$DaoVarName}}.UpdateContext(ctx, model,
 		meta.{{$ObjName}}Meta.PrimaryKey(),
 	)
 }
@@ -71,7 +75,7 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 			attr[k] = v
 		}
 		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx *sqlx.Tx) error {
-			_, err := dao.{{$ObjName}}Dao.UpdateFieldTxContext(txCtx, tx, id, attr)
+			_, err := dao.{{$DaoVarName}}.UpdateFieldTxContext(txCtx, tx, id, attr)
 			return err
 		})
 		if err != nil {
@@ -84,7 +88,7 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 // DeleteByIDs 批量更新
 func (svc {{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
-	_, err := dao.{{$ObjName}}Dao.DeleteByCondContext(ctx, ql.C().And(
+	_, err := dao.{{$DaoVarName}}.DeleteByCondContext(ctx, ql.C().And(
 		meta.{{$ObjName}}Meta.IdIn(ids...),
 	))
 	if err != nil {
