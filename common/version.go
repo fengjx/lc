@@ -12,7 +12,7 @@ var embedFS embed.FS
 const (
 	GithubOwner = "fengjx"
 	GithubRepo  = "lc"
-	v           = "v1.0.0"
+	v           = "v1.1.0"
 )
 
 var GitInfo gitInfo
