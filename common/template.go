@@ -15,7 +15,7 @@ import (
 	"github.com/fengjx/lc/pkg/kit"
 )
 
-const versionPrefix = "v1.0"
+const versionPrefix = "v1.1"
 
 // SyncTemplate 同步模板
 // LatestDir 最新版本目录
