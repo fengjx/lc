@@ -55,7 +55,7 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 		parent = g.BaseTmplDir
 	}
 	for _, entry := range entries {
-		if g.EntryFilter != nil && !g.EntryFilter(g.ctx, entry) {
+		if g.EntryFilter != nil && g.EntryFilter(g.ctx, entry) {
 			continue
 		}
 		path := filepath.Join(parent, entry.Name())
@@ -126,7 +126,16 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			color.Red("解析模板文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
-		err = os.WriteFile(targetFile, newbytes, 0600)
+		codeBys := newbytes
+		f := getFormater(targetFile)
+		if f != nil {
+			codeBys, err = f(newbytes)
+			if err != nil {
+				color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
+				return
+			}
+		}
+		err = os.WriteFile(targetFile, codeBys, 0600)
 		if err != nil {
 			color.Red("生成文件失败：%s，失败原因：%s", targetFile, err.Error())
 			return
