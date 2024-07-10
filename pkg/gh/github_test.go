@@ -43,7 +43,7 @@ func TestDownloadReleaseAsset(t *testing.T) {
 		}
 		return nil
 	}
-	asset, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assertFilter, getDownloadDir)
+	asset, _, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assertFilter, getDownloadDir)
 	if err != nil {
 		t.Fatal(err)
 	}

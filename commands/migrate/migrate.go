@@ -16,6 +16,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 
+	"github.com/fengjx/lc/commands/migrate/internal/amis"
 	"github.com/fengjx/lc/commands/migrate/internal/types"
 	"github.com/fengjx/lc/common"
 	"github.com/fengjx/lc/pkg/filegen"
@@ -159,8 +160,8 @@ func loadColumnMeta(db *sqlx.DB, dbName, tableName string) ([]Column, Column) {
 			column_type,
 			column_comment, 
 			column_key,
-			ifnull(column_default, ''),
-			ifnull(extra, '')
+			ifnull(column_default, '') as col_default,
+			ifnull(extra, '') as extra
 		FROM information_schema.columns
 		WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION`
 	rows, err := db.Query(querySQL, args...)
@@ -206,6 +207,18 @@ func loadColumnMeta(db *sqlx.DB, dbName, tableName string) ([]Column, Column) {
 		colName = strings.TrimSuffix(colName, "/* mariadb-5.3 */")
 		col.SQLType = strings.ToUpper(colName)
 
+		// 判断 columnType 是否是时间字段
+		timeTypes := map[string]struct{}{
+			"DATE":      {},
+			"DATETIME":  {},
+			"TIMESTAMP": {},
+			"TIME":      {},
+			"YEAR":      {},
+		}
+		if _, isTimeType := timeTypes[col.SQLType]; isTimeType {
+			col.IsTimeType = true
+		}
+
 		if columnKey == "PRI" {
 			col.IsPrimaryKey = true
 			primaryKey = col
@@ -244,9 +257,11 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 		"GonicCase":            kit.GonicCase,
 		"LineString":           kit.LineString,
 		"IsLastIndex":          kit.IsLastIndex,
+		"SQLType2GoTypeString": types.SQLType2GoTypeString,
+		"InputType":            amis.InputType,
 		"Add":                  kit.Add,
 		"Sub":                  kit.Sub,
-		"SQLType2GoTypeString": types.SQLType2GoTypeString,
+		"ContainsString":       kit.ContainsString,
 	}
 	fg := &filegen.FileGen{
 		EmbedFS:     eFS,
@@ -259,7 +274,7 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 		// 排除admin目录
 		fg.EntryFilter = func(ctx context.Context, entry os.DirEntry) bool {
 			adminDirs := []string{"static", "endpoint"}
-			return !kit.ContainsString(adminDirs, entry.Name())
+			return kit.ContainsString(adminDirs, entry.Name())
 		}
 	}
 	g := &gen{
