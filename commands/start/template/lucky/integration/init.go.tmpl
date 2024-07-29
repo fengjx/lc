@@ -1,0 +1,11 @@
+package integration
+
+import (
+	"github.com/fengjx/luchen/log"
+
+	_ "{{.gomod}}/integration/db"
+)
+
+func Init() {
+	log.Info("integration init")
+}
