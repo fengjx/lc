@@ -74,7 +74,7 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 			}
 			attr[k] = v
 		}
-		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx *sqlx.Tx) error {
+		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx engine.Executor) error {
 			_, err := dao.{{$DaoVarName}}.WithExecutor(tx).UpdateFieldContext(txCtx, id, attr)
 			return err
 		})
