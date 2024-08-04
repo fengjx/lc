@@ -75,7 +75,7 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 			attr[k] = v
 		}
 		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx *sqlx.Tx) error {
-			_, err := dao.{{$DaoVarName}}.UpdateFieldTxContext(txCtx, tx, id, attr)
+			_, err := dao.{{$DaoVarName}}.WithExecutor(tx).UpdateFieldContext(txCtx, id, attr)
 			return err
 		})
 		if err != nil {
@@ -88,9 +88,9 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 // DeleteByIDs 批量更新
 func (svc {{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
-	_, err := dao.{{$DaoVarName}}.DeleteByCondContext(ctx, ql.C().And(
+	_, err := dao.{{$DaoVarName}}.Deleter().Where(ql.C().And(
 		meta.{{$ObjName}}Meta.IdIn(ids...),
-	))
+	)).Exec()
 	if err != nil {
 		l.Error("delete {{.Table.Name}} err", zap.Error(err))
 		return err
