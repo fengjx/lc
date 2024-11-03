@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/fengjx/daox"
+	"github.com/fengjx/daox/engine"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 	"github.com/fengjx/go-halo/json"
 	"github.com/fengjx/luchen/log"
@@ -89,7 +90,7 @@ func (s *{{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchUp
 func (s *{{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
 	_, err := dao.{{$DaoVarName}}.Deleter().Where(ql.C().And(
-		meta.{{$ObjName}}Meta.IdIn(ids...),
+		meta.{{$ObjName}}Meta.{{.Table.PrimaryKey.Name}}In(ids...),
 	)).Exec()
 	if err != nil {
 		l.Error("delete {{.Table.Name}} err", zap.Error(err))
