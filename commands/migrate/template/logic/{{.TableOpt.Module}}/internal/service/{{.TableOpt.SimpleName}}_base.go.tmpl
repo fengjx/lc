@@ -56,7 +56,7 @@ func (s *{{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) 
 }
 
 // Update 更新记录
-func (svc {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
+func (s* {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
 	return dao.{{$DaoVarName}}.UpdateContext(ctx, model,
 		meta.{{$ObjName}}Meta.PrimaryKey(),
 	)
