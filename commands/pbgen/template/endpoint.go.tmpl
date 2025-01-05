@@ -1,0 +1,53 @@
+package {{ .Package }}
+
+import (
+	"context"
+	"fmt"
+
+	{{ if .GoModPath }}"{{ .GoModPath }}/{{ .GoPackage }}"{{ else }}"{{ .GoPackage }}"{{ end }}
+	"github.com/fengjx/luchen"
+)
+
+// Register{{ .ServiceName }}GRPCHandler 注册 GRPC 服务处理器
+func Register{{ .ServiceName }}GRPCHandler(gs *luchen.GRPCServer) {
+	{{ .Package }}.Register{{ .ServiceName }}GRPCHandler(gs, {{ .ServiceName }}EndpointImpl)
+}
+
+// Register{{ .ServiceName }}HTTPHandler 注册 HTTP 服务处理器
+func Register{{ .ServiceName }}HTTPHandler(hs *luchen.HTTPServer) {
+	{{ .Package }}.Register{{ .ServiceName }}HTTPHandler(hs, {{ .ServiceName }}EndpointImpl)
+}
+
+// {{ .ServiceName }}EndpointImpl 默认的服务实现
+var {{ .ServiceName }}EndpointImpl = &{{ .ServiceName }}Endpoint{
+	handler: &{{ .ServiceName }}HandlerImpl{},
+}
+
+// {{ .ServiceName }}HandlerImpl 服务处理器实现
+type {{ .ServiceName }}HandlerImpl struct {
+}
+
+// {{ .ServiceName }}Endpoint 服务 Endpoint 定义
+type {{ .ServiceName }}Endpoint struct {
+	handler {{ .Package }}.{{ .ServiceName }}Handler
+}
+
+{{ range .Methods }}
+{{- if .Comment -}}
+{{- range $line := split .Comment "\n" }}
+// {{ $line }}
+{{- end }}
+{{- else }}
+// {{ .Name }}Endpoint 实现 {{ .Name }} 方法的 Endpoint
+{{- end }}
+func (e *{{ $.ServiceName }}Endpoint) {{ .Name }}Endpoint() luchen.Endpoint {
+	fn := func(ctx context.Context, request any) (any, error) {
+		req, ok := request.(*{{ $.Package }}.{{ .InputType }})
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: %T", request)
+		}
+		return e.handler.{{ .Name }}(ctx, req)
+	}
+	return fn
+}
+{{ end }} 

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pbgreet;
+
+option go_package = "proto/pbgreet";
+
+// gomodpath=github.com/fengjx/lc/test
+// epath=endpoint/api/great
+
+// Greeter greet 示例
+service Greeter {
+  // SayHello Sends a greeting
+  // http.path=/greeter/say-hello
+  rpc SayHello(HelloReq) returns (HelloResp) {}
+
+  // Ping ping service
+  // http.path=/greeter/ping
+  rpc Ping(PingReq) returns (PingResp) {}
+}
+
+// The request message containing the user's name.
+message HelloReq {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloResp {
+  string message = 1;
+}
+
+message PingReq {
+  string name = 1;
+}
+
+message PingResp {
+  string message = 1;
+}

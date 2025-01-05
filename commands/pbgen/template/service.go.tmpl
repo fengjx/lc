@@ -1,0 +1,19 @@
+package {{ .Package }}
+
+import (
+	"context"
+
+	{{ if .GoModPath }}"{{ .GoModPath }}/{{ .GoPackage }}"{{ else }}"{{ .GoPackage }}"{{ end }}
+)
+
+{{- if .Method.Comment }}
+{{- range $line := split .Method.Comment "\n" }}
+// {{ $line }}
+{{- end }}
+{{- else }}
+// {{ .Method.Name }} 实现 {{ .ServiceName }}Handler 接口中的 {{ .Method.Name }} 方法
+{{- end }}
+func (h *{{ .ServiceName }}HandlerImpl) {{ .Method.Name }}(ctx context.Context, req *{{ .Package }}.{{ .Method.InputType }}) (*{{ .Package }}.{{ .Method.OutputType }}, error) {
+	// TODO: implement me
+	return &{{ .Package }}.{{ .Method.OutputType }}{}, nil
+}
