@@ -120,6 +120,10 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 
+	if pbiInfo.ServiceName == "" {
+		return nil
+	}
+
 	// 生成 handler 文件
 	if err := genHandlerFile(pbiInfo, outDir, protoFile); err != nil {
 		return err
