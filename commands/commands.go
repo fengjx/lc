@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/urfave/cli/v2"
 
+	"github.com/fengjx/lc/commands/gen"
 	"github.com/fengjx/lc/commands/migrate"
 	"github.com/fengjx/lc/commands/start"
 )
@@ -10,4 +11,5 @@ import (
 var Commands = []*cli.Command{
 	start.Command,
 	migrate.Command,
+	gen.Command,
 }

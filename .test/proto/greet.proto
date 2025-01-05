@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pbgreet;
+
+option go_package = "pb/pbgreet";
+
+// epath=
+
+service Greeter {
+  // Sends a greeting
+  rpc SayHello(HelloReq) returns (HelloResp) {}
+}
+
+// The request message containing the user's name.
+message HelloReq { string name = 1; }
+
+// The response message containing the greetings
+message HelloResp { string message = 1; }
