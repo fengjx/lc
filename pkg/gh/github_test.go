@@ -43,9 +43,9 @@ func TestDownloadReleaseAsset(t *testing.T) {
 		}
 		return nil, nil
 	}
-	downloadPath, exist, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assetFilter, getDownloadDir)
+	asset, _, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assetFilter, getDownloadDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("下载文件路径:", downloadPath, "文件已存在:", exist)
+	t.Log("asset", *asset.BrowserDownloadURL)
 }

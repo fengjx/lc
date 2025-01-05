@@ -44,11 +44,14 @@ type Request struct {
 func Call(ctx context.Context, req *Request) (*Response, error) {
 	var httpReq *http.Request
 	var err error
+	var contentType string
 	if req.Body != nil {
+		contentType = "application/json"
 		bys, _ := json.Marshal(req.Body)
 		bodyBuf := bytes.NewBuffer(bys)
 		httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, req.URL, bodyBuf)
 	} else if len(req.Form) > 0 {
+		contentType = "application/x-www-form-urlencoded"
 		httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, req.URL, strings.NewReader(req.Form.Encode()))
 	} else {
 		httpReq, err = http.NewRequestWithContext(ctx, http.MethodGet, req.URL, nil)
@@ -56,6 +59,7 @@ func Call(ctx context.Context, req *Request) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	httpReq.Header.Set("Content-Type", contentType)
 	if len(req.Params) > 0 {
 		httpReq.URL.RawQuery = req.Params.Encode()
 	}

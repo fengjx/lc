@@ -9,10 +9,10 @@ import (
 	"context"
 
 	"github.com/fengjx/daox"
+	"github.com/fengjx/daox/engine"
 	"github.com/fengjx/daox/sqlbuilder/ql"
 	"github.com/fengjx/go-halo/json"
 	"github.com/fengjx/luchen/log"
-	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 
 	"{{.Gomod}}/connom/types"
@@ -32,7 +32,7 @@ type {{$ServiceName}} struct {
 }
 
 // Query 分页查询
-func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.{{$ObjName}}], error) {
+func (s *{{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) (*types.PageVO[entity.{{$ObjName}}], error) {
 	readDB := dao.{{$DaoVarName}}.GetReadDB()
 	query.TableName = meta.{{$ObjName}}Meta.TableName()
 	list, page, err := daox.Find[entity.{{$ObjName}}](ctx, readDB, *query)
@@ -51,19 +51,19 @@ func (svc {{$ServiceName}}) Query(ctx context.Context, query *daox.QueryRecord) 
 }
 
 // Add 新增记录
-func (svc {{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) (int64, error) {
+func (s *{{$ServiceName}}) Add(ctx context.Context, model *entity.{{$ObjName}}) (int64, error) {
 	return dao.{{$DaoVarName}}.SaveContext(ctx, model)
 }
 
 // Update 更新记录
-func (svc {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
+func (s* {{$ServiceName}}) Update(ctx context.Context, model *entity.{{$ObjName}}) (bool, error) {
 	return dao.{{$DaoVarName}}.UpdateContext(ctx, model,
 		meta.{{$ObjName}}Meta.PrimaryKey(),
 	)
 }
 
 // BatchUpdate 批量更新
-func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
+func (s *{{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchUpdate) (bool, error) {
 	for _, row := range param.Rows {
 		var id any
 		attr := map[string]any{}
@@ -74,8 +74,8 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 			}
 			attr[k] = v
 		}
-		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx *sqlx.Tx) error {
-			_, err := dao.{{$DaoVarName}}.UpdateFieldTxContext(txCtx, tx, id, attr)
+		err := db.GetDefaultTxManager().ExecTx(ctx, func(txCtx context.Context, tx engine.Executor) error {
+			_, err := dao.{{$DaoVarName}}.WithExecutor(tx).UpdateFieldContext(txCtx, id, attr)
 			return err
 		})
 		if err != nil {
@@ -86,11 +86,11 @@ func (svc {{$ServiceName}}) BatchUpdate(ctx context.Context, param *types.BatchU
 }
 
 // DeleteByIDs 批量更新
-func (svc {{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
+func (s *{{$ServiceName}}) DeleteByIDs(ctx context.Context, ids []int64) error {
 	l := log.GetLogger(ctx).With(zap.Any("ids", ids))
-	_, err := dao.{{$DaoVarName}}.DeleteByCondContext(ctx, ql.C().And(
-		meta.{{$ObjName}}Meta.IdIn(ids...),
-	))
+	_, err := dao.{{$DaoVarName}}.Deleter().Where(ql.C().And(
+		meta.{{$ObjName}}Meta.{{TitleCase .Table.PrimaryKey.Name}}In(ids...),
+	)).Exec()
 	if err != nil {
 		l.Error("delete {{.Table.Name}} err", zap.Error(err))
 		return err
