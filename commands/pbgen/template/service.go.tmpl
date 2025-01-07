@@ -2,9 +2,24 @@ package {{ .Package }}
 
 import (
 	"context"
+	"fmt"
 
 	{{ if .GoModPath }}"{{ .GoModPath }}/{{ .GoPackage }}"{{ else }}"{{ .GoPackage }}"{{ end }}
+	"github.com/fengjx/luchen"
 )
+
+
+func (e *{{ .ServiceName }}Endpoint) {{ .Method.Name }}Endpoint() luchen.Endpoint {
+	fn := func(ctx context.Context, request any) (any, error) {
+		req, ok := request.(*{{ .Package }}.{{ .Method.InputType }})
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: %T", request)
+		}
+		return e.handler.{{ .Method.Name }}(ctx, req)
+	}
+	return fn
+}
+
 
 {{- if .Method.Comment }}
 {{- range $line := split .Method.Comment "\n" }}
