@@ -63,7 +63,7 @@ var flags = []cli.Flag{
 		Name:    "out",
 		Aliases: []string{"o"},
 		Usage:   "输出目录",
-		Value:   "./pb",
+		Value:   "./",
 	},
 }
 
