@@ -2,7 +2,6 @@ package pbgen
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -336,12 +335,6 @@ func parseProtoFile(content string) (*PbInfo, error) {
 				}
 			}
 		}
-	}
-
-	if data.ServiceName == "" {
-		err := fmt.Errorf("未找到service定义")
-		color.Red(err.Error())
-		return nil, err
 	}
 
 	return data, nil
