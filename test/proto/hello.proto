@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pbuser;
+package pb.user;
 
 option go_package = "proto/pbuser";
 

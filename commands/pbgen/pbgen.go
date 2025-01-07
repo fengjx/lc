@@ -76,12 +76,14 @@ type Method struct {
 }
 
 type PbInfo struct {
-	Package      string
-	ServiceName  string
-	Methods      []Method
-	GoPackage    string
-	GoModPath    string
-	EndpointPath string
+	Package         string
+	ServiceName     string
+	Methods         []Method
+	GoPackage       string
+	GoModPath       string
+	EndpointPath    string
+	PkgName         string // go_package 的最后一个路径
+	EndpointPkgName string // endpoint 包名，使用 epath 的最后一个路径
 }
 
 func action(ctx *cli.Context) error {
@@ -285,6 +287,8 @@ func parseProtoFile(content string) (*PbInfo, error) {
 					goPackage = goPackage[:idx]
 				}
 				data.GoPackage = goPackage
+				// 使用最后一个路径部分作为包名
+				data.PkgName = filepath.Base(goPackage)
 			}
 		}),
 		proto.WithService(func(s *proto.Service) {
@@ -332,9 +336,16 @@ func parseProtoFile(content string) (*PbInfo, error) {
 					data.GoModPath = value
 				} else if value, ok := parseCommentParam(line, "epath"); ok {
 					data.EndpointPath = value
+					// 使用 epath 的最后一个路径作为 endpoint 包名
+					data.EndpointPkgName = filepath.Base(value)
 				}
 			}
 		}
+	}
+
+	// 如果没有设置 EndpointPkgName，则使用 PkgName
+	if data.EndpointPkgName == "" {
+		data.EndpointPkgName = data.PkgName
 	}
 
 	return data, nil

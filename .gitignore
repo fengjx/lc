@@ -4,4 +4,4 @@ out
 .dist
 .lc
 t/migrate/config-local.yml
-tets/gen
+test/gen

@@ -1,4 +1,4 @@
-package {{ .Package }}
+package {{ .EndpointPkgName }}
 
 import (
 	"context"
@@ -8,10 +8,9 @@ import (
 	"github.com/fengjx/luchen"
 )
 
-
 func (e *{{ .ServiceName }}Endpoint) {{ .Method.Name }}Endpoint() luchen.Endpoint {
 	fn := func(ctx context.Context, request any) (any, error) {
-		req, ok := request.(*{{ .Package }}.{{ .Method.InputType }})
+		req, ok := request.(*{{ .PkgName }}.{{ .Method.InputType }})
 		if !ok {
 			return nil, fmt.Errorf("invalid request type: %T", request)
 		}
@@ -20,7 +19,6 @@ func (e *{{ .ServiceName }}Endpoint) {{ .Method.Name }}Endpoint() luchen.Endpoin
 	return fn
 }
 
-
 {{- if .Method.Comment }}
 {{- range $line := split .Method.Comment "\n" }}
 // {{ $line }}
@@ -28,7 +26,7 @@ func (e *{{ .ServiceName }}Endpoint) {{ .Method.Name }}Endpoint() luchen.Endpoin
 {{- else }}
 // {{ .Method.Name }} 实现 {{ .ServiceName }}Handler 接口中的 {{ .Method.Name }} 方法
 {{- end }}
-func (h *{{ .ServiceName }}HandlerImpl) {{ .Method.Name }}(ctx context.Context, req *{{ .Package }}.{{ .Method.InputType }}) (*{{ .Package }}.{{ .Method.OutputType }}, error) {
+func (h *{{ .ServiceName }}HandlerImpl) {{ .Method.Name }}(ctx context.Context, req *{{ .PkgName }}.{{ .Method.InputType }}) (*{{ .PkgName }}.{{ .Method.OutputType }}, error) {
 	// TODO: implement me
-	return &{{ .Package }}.{{ .Method.OutputType }}{}, nil
+	return &{{ .PkgName }}.{{ .Method.OutputType }}{}, nil
 }

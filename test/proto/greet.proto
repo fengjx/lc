@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pbgreet;
+package pb.pbgreet;
 
 option go_package = "proto/pbgreet";
 
