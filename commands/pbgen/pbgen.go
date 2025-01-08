@@ -13,6 +13,7 @@ import (
 	"github.com/emicklei/proto"
 	"github.com/fatih/color"
 	"github.com/fengjx/lc/pkg/execx"
+	"github.com/fengjx/lc/pkg/formater"
 	"github.com/urfave/cli/v2"
 )
 
@@ -219,7 +220,6 @@ func genFileFromTemplate(filename, tmpl string, data any, forceOverwrite bool) e
 
 	// 如果文件存在且不强制覆盖，则跳过
 	if !forceOverwrite && fileExists(filename) {
-		color.Yellow("文件已存在，跳过生成: %s", absPath)
 		return nil
 	}
 
@@ -235,8 +235,21 @@ func genFileFromTemplate(filename, tmpl string, data any, forceOverwrite bool) e
 		return err
 	}
 
+	// 确保目录存在
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
+		color.Red("创建目录失败: %v", err)
+		return err
+	}
+
+	// 写入文件
 	if err := os.WriteFile(filename, buf.Bytes(), 0644); err != nil {
 		color.Red("写入文件失败: %v", err)
+		return err
+	}
+
+	// 格式化文件
+	if err := formater.FormatFile(filename); err != nil {
+		color.Red("格式化文件失败: %v", err)
 		return err
 	}
 

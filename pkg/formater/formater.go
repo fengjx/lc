@@ -1,9 +1,10 @@
-package filegen
+package formater
 
 import (
 	"bytes"
 	"encoding/json"
 	"go/format"
+	"os"
 	"strings"
 )
 
@@ -23,11 +24,38 @@ func jsonFormater(src []byte) ([]byte, error) {
 	return formatted.Bytes(), nil
 }
 
+func defaultFormater(src []byte) ([]byte, error) {
+	return src, nil
+}
+
 func getFormater(targetFile string) formater {
 	if strings.HasSuffix(targetFile, ".go") {
 		return goFormater
 	} else if strings.HasSuffix(targetFile, ".json") {
 		return jsonFormater
 	}
-	return nil
+	return defaultFormater
+}
+
+// FormatFile 格式化文件
+func FormatFile(targetFile string) error {
+	f := getFormater(targetFile)
+	if f == nil {
+		return nil
+	}
+
+	// 读取文件内容
+	src, err := os.ReadFile(targetFile)
+	if err != nil {
+		return err
+	}
+
+	// 格式化内容
+	bs, err := f(src)
+	if err != nil {
+		return err
+	}
+
+	// 写回文件
+	return os.WriteFile(targetFile, bs, 0644)
 }

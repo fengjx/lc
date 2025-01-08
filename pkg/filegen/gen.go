@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/fengjx/lc/pkg/formater"
 )
 
 // EntryFilter 模板文件过滤
@@ -127,13 +128,10 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			return
 		}
 		codeBys := newbytes
-		f := getFormater(targetFile)
-		if f != nil {
-			codeBys, err = f(newbytes)
-			if err != nil {
-				color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
-				return
-			}
+		err = formater.FormatFile(targetFile)
+		if err != nil {
+			color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
+			return
 		}
 		err = os.WriteFile(targetFile, codeBys, 0600)
 		if err != nil {
