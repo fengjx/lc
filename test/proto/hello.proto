@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pb.user;
+
+option go_package = "proto/pbuser";
+
+message User {
+  string name = 1;
+  int32 age = 2;
+}
