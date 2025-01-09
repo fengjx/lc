@@ -65,6 +65,16 @@ var flags = []cli.Flag{
 		Usage:   "输出目录",
 		Value:   "./",
 	},
+	&cli.StringFlag{
+		Name:  "go_opt",
+		Usage: "protoc 的 go_opt 参数",
+		Value: "",
+	},
+	&cli.StringFlag{
+		Name:  "grpc_opt",
+		Usage: "protoc 的 go-grpc_opt 参数",
+		Value: "",
+	},
 }
 
 type Method struct {
@@ -91,25 +101,13 @@ func action(ctx *cli.Context) error {
 	protoFile := ctx.String("file")
 	outDir := ctx.String("out")
 
-	// 1. 创建输出目录
+	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
 		color.Red("创建输出目录失败: %v", err)
 		return err
 	}
 
-	// 2. 运行 protoc 命令生成基础代码
-	args := []string{
-		"--go_out=" + outDir,
-		"--go-grpc_out=" + outDir,
-		protoFile,
-	}
-	cmd := execx.WrapCmd("protoc", args)
-	if _, err := execx.Run(cmd, ""); err != nil {
-		color.Red("执行 protoc 命令失败: %v", err)
-		return err
-	}
-
-	// 3. 解析 proto 文件获取服务信息
+	// 解析 proto 文件获取服务信息
 	protoContent, err := os.ReadFile(protoFile)
 	if err != nil {
 		color.Red("读取 proto 文件失败: %v", err)
@@ -119,6 +117,41 @@ func action(ctx *cli.Context) error {
 	pbiInfo, err := parseProtoFile(string(protoContent))
 	if err != nil {
 		color.Red("解析 proto 文件失败: %v", err)
+		return err
+	}
+
+	goOpt := ctx.String("go_opt")
+	grpcOpt := ctx.String("grpc_opt")
+	// 如果存在 GoModPath，将其添加到 go_opt 中
+	if pbiInfo.GoModPath != "" {
+		if goOpt != "" {
+			goOpt = goOpt + ",module=" + pbiInfo.GoModPath
+		} else {
+			goOpt = "module=" + pbiInfo.GoModPath
+		}
+
+		if grpcOpt != "" {
+			grpcOpt = grpcOpt + ",module=" + pbiInfo.GoModPath
+		} else {
+			grpcOpt = "module=" + pbiInfo.GoModPath
+		}
+	}
+
+	args := []string{
+		"--go_out=" + outDir,
+		"--go-grpc_out=" + outDir,
+	}
+	if goOpt != "" {
+		args = append(args, "--go_opt="+goOpt)
+	}
+	if grpcOpt != "" {
+		args = append(args, "--go-grpc_opt="+grpcOpt)
+	}
+	args = append(args, protoFile)
+
+	cmd := execx.WrapCmd("protoc", args)
+	if _, err := execx.Run(cmd, ""); err != nil {
+		color.Red("执行 protoc 命令失败: %v", err)
 		return err
 	}
 
@@ -146,6 +179,8 @@ func genHandlerFile(pbiInfo *PbInfo, outDir, protoFile string) error {
 
 	if pbiInfo.GoPackage != "" {
 		pkgPath := strings.TrimPrefix(pbiInfo.GoPackage, "./")
+		// 去掉 gomodpath 的路径
+		pkgPath = strings.ReplaceAll(pkgPath, pbiInfo.GoModPath, "")
 		handlerFile = filepath.Join(outDir, pkgPath, fileName+".handler.luchen.go")
 	} else {
 		handlerFile = filepath.Join(outDir, fileName+".handler.luchen.go")

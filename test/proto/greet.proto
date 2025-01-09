@@ -2,9 +2,11 @@ syntax = "proto3";
 
 package pb.pbgreet;
 
-option go_package = "proto/pbgreet";
+import "test/proto/hello.proto";
 
-// gomodpath=github.com/fengjx/lc/test
+option go_package = "github.com/fengjx/lc/test/proto/pbgreet";
+
+// gomodpath=github.com/fengjx/lc
 // epath=endpoint/api/great
 
 // Greeter greet 示例
@@ -16,6 +18,8 @@ service Greeter {
   // Ping ping service
   // http.path=/greeter/ping
   rpc Ping(PingReq) returns (PingResp) {}
+
+  rpc GetUser(GetUserReq) returns (GetUserResp) {}
 }
 
 // The request message containing the user's name.
@@ -34,4 +38,12 @@ message PingReq {
 
 message PingResp {
   string message = 1;
+}
+
+message GetUserReq {
+  string id = 1;
+}
+
+message GetUserResp {
+  pb.user.User user = 1;
 }
