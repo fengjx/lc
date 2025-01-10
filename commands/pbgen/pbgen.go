@@ -2,6 +2,7 @@ package pbgen
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,6 +88,7 @@ type Method struct {
 }
 
 type PbInfo struct {
+	ProtoFile       string
 	Package         string
 	ServiceName     string
 	Methods         []Method
@@ -108,13 +110,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	// 解析 proto 文件获取服务信息
-	protoContent, err := os.ReadFile(protoFile)
-	if err != nil {
-		color.Red("读取 proto 文件失败: %v", err)
-		return err
-	}
-
-	pbiInfo, err := parseProtoFile(string(protoContent))
+	pbiInfo, err := parseProtoFile(protoFile)
 	if err != nil {
 		color.Red("解析 proto 文件失败: %v", err)
 		return err
@@ -160,7 +156,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	// 生成 handler 文件
-	if err := genHandlerFile(pbiInfo, outDir, protoFile); err != nil {
+	if err := genHandlerFile(pbiInfo, outDir); err != nil {
 		return err
 	}
 
@@ -173,7 +169,8 @@ func action(ctx *cli.Context) error {
 }
 
 // 生成 handler 文件
-func genHandlerFile(pbiInfo *PbInfo, outDir, protoFile string) error {
+func genHandlerFile(pbiInfo *PbInfo, outDir string) error {
+	protoFile := pbiInfo.ProtoFile
 	fileName := strings.TrimSuffix(filepath.Base(protoFile), ".proto")
 	var handlerFile string
 
@@ -204,15 +201,15 @@ func genHandlerFile(pbiInfo *PbInfo, outDir, protoFile string) error {
 func genEndpointFiles(pbiInfo *PbInfo, outDir string) error {
 	// 使用 epath 或默认路径
 	var endpointDir string
-	if pbiInfo.EndpointPath != "" {
-		// 如果 EndpointPath 是相对路径，则使用 out 参数作为根路径
-		if !filepath.IsAbs(pbiInfo.EndpointPath) {
-			endpointDir = filepath.Join(outDir, pbiInfo.EndpointPath)
-		} else {
-			endpointDir = pbiInfo.EndpointPath
-		}
+	if pbiInfo.EndpointPath == "" {
+		color.Red("没有设置 spath 参数: %s", pbiInfo.ProtoFile)
+		return fmt.Errorf("没有设置 spath 参数")
+	}
+	// 如果 EndpointPath 是相对路径，则使用 out 参数作为根路径
+	if !filepath.IsAbs(pbiInfo.EndpointPath) {
+		endpointDir = filepath.Join(outDir, pbiInfo.EndpointPath)
 	} else {
-		endpointDir = filepath.Join(outDir, "endpoint/api", strings.ToLower(pbiInfo.ServiceName))
+		endpointDir = pbiInfo.EndpointPath
 	}
 
 	if err := os.MkdirAll(endpointDir, 0755); err != nil {
@@ -222,7 +219,7 @@ func genEndpointFiles(pbiInfo *PbInfo, outDir string) error {
 
 	// 生成 endpoint 文件，如果存在则跳过
 	endpointFile := filepath.Join(endpointDir, strings.ToLower(pbiInfo.ServiceName+"endpoint.go"))
-	if err := genFileFromTemplate(endpointFile, endpointTmpl, pbiInfo, false); err != nil {
+	if err := genFileFromTemplate(endpointFile, endpointTmpl, pbiInfo, true); err != nil {
 		return err
 	}
 
@@ -310,7 +307,13 @@ func parseCommentParam(line, key string) (string, bool) {
 	return strings.TrimSpace(parts[1]), true
 }
 
-func parseProtoFile(content string) (*PbInfo, error) {
+func parseProtoFile(protoFile string) (*PbInfo, error) {
+	protoContent, err := os.ReadFile(protoFile)
+	if err != nil {
+		color.Red("读取 proto 文件失败: %v", err)
+		return nil, err
+	}
+	content := string(protoContent)
 	reader := strings.NewReader(content)
 	parser := proto.NewParser(reader)
 	definition, err := parser.Parse()
@@ -319,7 +322,9 @@ func parseProtoFile(content string) (*PbInfo, error) {
 		return nil, err
 	}
 
-	data := &PbInfo{}
+	data := &PbInfo{
+		ProtoFile: protoFile,
+	}
 
 	// 遍历proto定义
 	proto.Walk(definition,
