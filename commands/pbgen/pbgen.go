@@ -305,12 +305,11 @@ func genHandlerFile(pbiInfo *PbInfo, outDir string) error {
 
 // 生成 endpoint 相关文件
 func genEndpointFiles(pbiInfo *PbInfo, outDir string) error {
-	// 使用 epath 或默认路径
-	var endpointDir string
 	if pbiInfo.EndpointPath == "" {
 		color.Red("没有设置 spath 参数: %s", pbiInfo.ProtoFile)
 		return fmt.Errorf("没有设置 spath 参数")
 	}
+	var endpointDir string
 	// 如果 EndpointPath 是相对路径，则使用 out 参数作为根路径
 	if !filepath.IsAbs(pbiInfo.EndpointPath) {
 		endpointDir = filepath.Join(outDir, pbiInfo.EndpointPath)
@@ -324,7 +323,7 @@ func genEndpointFiles(pbiInfo *PbInfo, outDir string) error {
 	}
 
 	// 生成 endpoint 文件，如果存在则跳过
-	endpointFile := filepath.Join(endpointDir, strings.ToLower(pbiInfo.ServiceName+"endpoint.go"))
+	endpointFile := filepath.Join(endpointDir, strings.ToLower(pbiInfo.ServiceName+"_endpoint.go"))
 	if err := genFileFromTemplate(endpointFile, endpointTmpl, pbiInfo, true); err != nil {
 		return err
 	}
@@ -338,10 +337,39 @@ func genEndpointFiles(pbiInfo *PbInfo, outDir string) error {
 			PbInfo: pbiInfo,
 			Method: method,
 		}
-		filename := filepath.Join(endpointDir, strings.ToLower(method.Name)+".go")
+		filename := filepath.Join(endpointDir, strings.ToLower(pbiInfo.ServiceName)+"_"+strings.ToLower(method.Name)+".go")
 		if err := genFileFromTemplate(filename, serviceTmpl, data, false); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// 生成 curl 命令脚本文件
+func genCurlCmdFiles(pbiInfo *PbInfo, outDir string) error {
+	if pbiInfo.EndpointPath == "" {
+		color.Red("没有设置 spath 参数: %s", pbiInfo.ProtoFile)
+		return fmt.Errorf("没有设置 spath 参数")
+	}
+	// 使用 endpoint 路径作为基础路径
+	curlFile := filepath.Join(outDir, pbiInfo.EndpointPath, strings.ToLower(pbiInfo.ServiceName)+"_endpoint.curl")
+
+	// 确保目录存在
+	if err := os.MkdirAll(filepath.Dir(curlFile), 0755); err != nil {
+		color.Red("创建目录失败: %v", err)
+		return err
+	}
+
+	// 生成 curl 命令文件
+	if err := genFileFromTemplate(curlFile, curlTmpl, pbiInfo, true); err != nil {
+		return err
+	}
+
+	// 设置文件权限为可执行
+	if err := os.Chmod(curlFile, 0755); err != nil {
+		color.Red("设置文件权限失败: %v", err)
+		return err
 	}
 
 	return nil
@@ -621,42 +649,4 @@ func parseProtoFile(protoFile string) (*PbInfo, error) {
 	}
 
 	return data, nil
-}
-
-// 生成 curl 命令脚本文件
-func genCurlCmdFiles(pbiInfo *PbInfo, outDir string) error {
-	protoFile := pbiInfo.ProtoFile
-	fileName := strings.TrimSuffix(filepath.Base(protoFile), ".proto")
-	var curlFile string
-
-	if pbiInfo.EndpointPath != "" {
-		// 使用 endpoint 路径作为基础路径
-		curlFile = filepath.Join(outDir, pbiInfo.EndpointPath, strings.ToLower(pbiInfo.ServiceName)+"endpoint.curl")
-	} else if pbiInfo.GoPackage != "" {
-		pkgPath := strings.TrimPrefix(pbiInfo.GoPackage, "./")
-		// 去掉 gomodpath 的路径
-		pkgPath = strings.ReplaceAll(pkgPath, pbiInfo.GoModPath, "")
-		curlFile = filepath.Join(outDir, pkgPath, fileName+".curl")
-	} else {
-		curlFile = filepath.Join(outDir, fileName+".curl")
-	}
-
-	// 确保目录存在
-	if err := os.MkdirAll(filepath.Dir(curlFile), 0755); err != nil {
-		color.Red("创建目录失败: %v", err)
-		return err
-	}
-
-	// 生成 curl 命令文件
-	if err := genFileFromTemplate(curlFile, curlTmpl, pbiInfo, true); err != nil {
-		return err
-	}
-
-	// 设置文件权限为可执行
-	if err := os.Chmod(curlFile, 0755); err != nil {
-		color.Red("设置文件权限失败: %v", err)
-		return err
-	}
-
-	return nil
 }
