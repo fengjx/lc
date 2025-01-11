@@ -4,9 +4,9 @@ package pb.pbgreet;
 
 import "test/proto/hello.proto";
 
-option go_package = "github.com/fengjx/lc/test/proto/pbgreet";
+option go_package = "github.com/fengjx/lctest/proto/pbgreet";
 
-// gomodpath=github.com/fengjx/lc
+// gomodpath=github.com/fengjx/lctest
 // epath=endpoint/api/great
 
 // Greeter greet 示例

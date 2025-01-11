@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package pb.user;
 
-option go_package = "github.com/fengjx/lc/test/proto/pbuser";
+option go_package = "github.com/fengjx/lctest/proto/pbuser";
 
-// gomodpath=github.com/fengjx/lc
+// gomodpath=github.com/fengjx/lctest
 
 message User {
   string name = 1;
