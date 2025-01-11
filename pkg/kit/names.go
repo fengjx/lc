@@ -2,6 +2,7 @@ package kit
 
 import (
 	"strings"
+	"unicode"
 	"unsafe"
 )
 
@@ -116,6 +117,18 @@ func GonicCase(str string) string {
 		}
 	}
 	return string(newstr)
+}
+
+// KebabCase kebab case 转换函数
+func KebabCase(s string) string {
+	var result strings.Builder
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			result.WriteRune('-')
+		}
+		result.WriteRune(unicode.ToLower(r))
+	}
+	return result.String()
 }
 
 var LintGonicMapper = map[string]bool{

@@ -9,4 +9,6 @@ option go_package = "github.com/fengjx/lc/test/proto/pbuser";
 message User {
   string name = 1;
   int32 age = 2;
+  float height = 3;
+  bool is_married = 4;
 }

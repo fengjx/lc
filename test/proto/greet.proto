@@ -20,6 +20,10 @@ service Greeter {
   rpc Ping(PingReq) returns (PingResp) {}
 
   rpc GetUser(GetUserReq) returns (GetUserResp) {}
+
+  // CurlDemo 示例
+  // http.path=/greeter/curl-demo
+  rpc CurlDemo(CurlDemoReq) returns (CurlDemoRsp) {}
 }
 
 // The request message containing the user's name.
@@ -46,4 +50,23 @@ message GetUserReq {
 
 message GetUserResp {
   pb.user.User user = 1;
+}
+
+// 应用类型枚举
+enum AppType {
+  APP_TYPE_UNSPECIFIED = 0;  // 未指定
+  APP_TYPE_WEB = 1;          // Web应用
+  APP_TYPE_MOBILE = 2;       // 移动应用
+  APP_TYPE_DESKTOP = 3;      // 桌面应用
+}
+
+message CurlDemoReq {
+  string name = 1;
+  AppType app_type = 2;  // 应用类型
+  pb.user.User user = 3;
+  repeated pb.user.User users = 4;
+}
+
+message CurlDemoRsp {
+  string message = 1;
 }
