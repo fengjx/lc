@@ -43,7 +43,7 @@ type {{ .ServiceName }}ServiceImpl struct {
 	middlewares []luchen.Middleware
 	endpoint    {{ .ServiceName }}Endpoint
 	{{- range .Methods }}
-	{{ .FieldName }}Define *luchen.EdnpointDefine
+	{{ .FieldName }}Define *luchen.EndpointDefine
 	{{ .FieldName }} grpctransport.Handler
 	{{- end }}
 }
@@ -64,7 +64,7 @@ func Get{{ .ServiceName }}ServiceImpl(e {{ .ServiceName }}Endpoint, middlewares 
 // new{{ .ServiceName }}ServiceImpl 创建新的服务实现
 func new{{ .ServiceName }}ServiceImpl(e {{ .ServiceName }}Endpoint, middlewares ...luchen.Middleware) *{{ .ServiceName }}ServiceImpl {
 	{{- range .Methods }}
-	{{ .FieldName }}Define := &luchen.EdnpointDefine{
+	{{ .FieldName }}Define := &luchen.EndpointDefine{
 		Name:        "{{ $.ServiceName }}.{{ .Name }}",
 		Path:        "{{ if .HTTPPath }}{{ .HTTPPath }}{{ else }}/{{ kebab .Name }}{{ end }}",
 		ReqType:     reflect.TypeOf(&{{ .InputType }}{}),

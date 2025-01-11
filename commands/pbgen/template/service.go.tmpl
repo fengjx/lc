@@ -3,8 +3,9 @@ package {{ .EndpointPkgName }}
 import (
 	"context"
 	"fmt"
+	"net/http"
 
-	{{ if .GoModPath }}"{{ .GoModPath }}/{{ .GoPackage }}"{{ else }}"{{ .GoPackage }}"{{ end }}
+	"{{ .GoPackage }}"
 	"github.com/fengjx/luchen"
 )
 
@@ -12,7 +13,8 @@ func (e *{{ .ServiceName }}Endpoint) {{ .Method.Name }}Endpoint() luchen.Endpoin
 	fn := func(ctx context.Context, request any) (any, error) {
 		req, ok := request.(*{{ .PkgName }}.{{ .Method.InputType }})
 		if !ok {
-			return nil, fmt.Errorf("invalid request type: %T", request)
+			msg := fmt.Sprintf("invalid request type: %T", request)
+			return nil, luchen.NewErrno(http.StatusBadRequest, msg)
 		}
 		return e.handler.{{ .Method.Name }}(ctx, req)
 	}

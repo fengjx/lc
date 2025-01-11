@@ -1,10 +1,11 @@
-package pbgreet
+package great
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 
-	"github.com/fengjx/lc/test/proto/pbgreet"
+	"github.com/fengjx/lctest/proto/pbgreet"
 	"github.com/fengjx/luchen"
 )
 
@@ -12,7 +13,8 @@ func (e *GreeterEndpoint) PingEndpoint() luchen.Endpoint {
 	fn := func(ctx context.Context, request any) (any, error) {
 		req, ok := request.(*pbgreet.PingReq)
 		if !ok {
-			return nil, fmt.Errorf("invalid request type: %T", request)
+			msg := fmt.Sprintf("invalid request type: %T", request)
+			return nil, luchen.NewErrno(http.StatusBadRequest, msg)
 		}
 		return e.handler.Ping(ctx, req)
 	}

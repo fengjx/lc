@@ -2,7 +2,7 @@
 package {{ .EndpointPkgName }}
 
 import (
-	{{ if .GoModPath }}"{{ .GoModPath }}/{{ .GoPackage }}"{{ else }}"{{ .GoPackage }}"{{ end }}
+	"{{ .GoPackage }}"
 	"github.com/fengjx/luchen"
 )
 

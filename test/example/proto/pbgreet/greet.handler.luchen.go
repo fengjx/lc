@@ -23,20 +23,35 @@ func NewGreeterService(serverName string) GreeterClient {
 	return NewGreeterClient(cli)
 }
 
+// GreeterHandler 定义服务处理器接口
 type GreeterHandler interface {
 	SayHello(ctx context.Context, in *HelloReq) (*HelloResp, error)
+	Ping(ctx context.Context, in *PingReq) (*PingResp, error)
+	GetUser(ctx context.Context, in *GetUserReq) (*GetUserResp, error)
+	CurlDemo(ctx context.Context, in *CurlDemoReq) (*CurlDemoRsp, error)
 }
 
+// GreeterEndpoint 定义服务 Endpoint 接口
 type GreeterEndpoint interface {
 	SayHelloEndpoint() luchen.Endpoint
+	PingEndpoint() luchen.Endpoint
+	GetUserEndpoint() luchen.Endpoint
+	CurlDemoEndpoint() luchen.Endpoint
 }
 
+// GreeterServiceImpl 服务实现
 type GreeterServiceImpl struct {
 	UnimplementedGreeterServer
 	middlewares    []luchen.Middleware
 	endpoint       GreeterEndpoint
-	sayHelloDefine *luchen.EdnpointDefine
-	sayHello       grpctransport.Handler
+	sayhelloDefine *luchen.EndpointDefine
+	sayhello       grpctransport.Handler
+	pingDefine     *luchen.EndpointDefine
+	ping           grpctransport.Handler
+	getuserDefine  *luchen.EndpointDefine
+	getuser        grpctransport.Handler
+	curldemoDefine *luchen.EndpointDefine
+	curldemo       grpctransport.Handler
 }
 
 var (
@@ -44,6 +59,7 @@ var (
 	greeterServiceImpl     *GreeterServiceImpl
 )
 
+// GetGreeterServiceImpl 获取服务实现的单例
 func GetGreeterServiceImpl(e GreeterEndpoint, middlewares ...luchen.Middleware) *GreeterServiceImpl {
 	greeterServiceImplOnce.Do(func() {
 		greeterServiceImpl = newGreeterServiceImpl(e, middlewares...)
@@ -51,41 +67,112 @@ func GetGreeterServiceImpl(e GreeterEndpoint, middlewares ...luchen.Middleware) 
 	return greeterServiceImpl
 }
 
+// newGreeterServiceImpl 创建新的服务实现
 func newGreeterServiceImpl(e GreeterEndpoint, middlewares ...luchen.Middleware) *GreeterServiceImpl {
-	sayHelloDefine := &luchen.EdnpointDefine{
-		Name:        "Greet.SayHello",
-		Path:        "/say-hello",
+	sayhelloDefine := &luchen.EndpointDefine{
+		Name:        "Greeter.SayHello",
+		Path:        "/greeter/say-hello",
 		ReqType:     reflect.TypeOf(&HelloReq{}),
 		RspType:     reflect.TypeOf(&HelloResp{}),
 		Endpoint:    e.SayHelloEndpoint(),
 		Middlewares: middlewares,
 	}
+	pingDefine := &luchen.EndpointDefine{
+		Name:        "Greeter.Ping",
+		Path:        "/greeter/ping",
+		ReqType:     reflect.TypeOf(&PingReq{}),
+		RspType:     reflect.TypeOf(&PingResp{}),
+		Endpoint:    e.PingEndpoint(),
+		Middlewares: middlewares,
+	}
+	getuserDefine := &luchen.EndpointDefine{
+		Name:        "Greeter.GetUser",
+		Path:        "/get-user",
+		ReqType:     reflect.TypeOf(&GetUserReq{}),
+		RspType:     reflect.TypeOf(&GetUserResp{}),
+		Endpoint:    e.GetUserEndpoint(),
+		Middlewares: middlewares,
+	}
+	curldemoDefine := &luchen.EndpointDefine{
+		Name:        "Greeter.CurlDemo",
+		Path:        "/greeter/curl-demo",
+		ReqType:     reflect.TypeOf(&CurlDemoReq{}),
+		RspType:     reflect.TypeOf(&CurlDemoRsp{}),
+		Endpoint:    e.CurlDemoEndpoint(),
+		Middlewares: middlewares,
+	}
 	impl := &GreeterServiceImpl{
 		endpoint:       e,
-		sayHelloDefine: sayHelloDefine,
+		sayhelloDefine: sayhelloDefine,
+		pingDefine:     pingDefine,
+		getuserDefine:  getuserDefine,
+		curldemoDefine: curldemoDefine,
 	}
-	impl.sayHello = luchen.NewGRPCTransportServer(sayHelloDefine)
+	impl.sayhello = luchen.NewGRPCTransportServer(sayhelloDefine)
+	impl.ping = luchen.NewGRPCTransportServer(pingDefine)
+	impl.getuser = luchen.NewGRPCTransportServer(getuserDefine)
+	impl.curldemo = luchen.NewGRPCTransportServer(curldemoDefine)
 	return impl
 }
 
+// SayHello Sends a greeting
+// http.path=/greeter/say-hello
 func (s *GreeterServiceImpl) SayHello(ctx context.Context, req *HelloReq) (*HelloResp, error) {
-	_, resp, err := s.sayHello.ServeGRPC(ctx, req)
+	_, resp, err := s.sayhello.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return resp.(*HelloResp), nil
 }
 
-// RegisterGreeterGRPCHandler 注册  GRPC 接口实现
+// Ping ping service
+// http.path=/greeter/ping
+func (s *GreeterServiceImpl) Ping(ctx context.Context, req *PingReq) (*PingResp, error) {
+	_, resp, err := s.ping.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*PingResp), nil
+}
+
+// GetUser 实现 GreeterServer 接口中的 GetUser 方法
+func (s *GreeterServiceImpl) GetUser(ctx context.Context, req *GetUserReq) (*GetUserResp, error) {
+	_, resp, err := s.getuser.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*GetUserResp), nil
+}
+
+// CurlDemo 示例
+// http.path=/greeter/curl-demo
+func (s *GreeterServiceImpl) CurlDemo(ctx context.Context, req *CurlDemoReq) (*CurlDemoRsp, error) {
+	_, resp, err := s.curldemo.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*CurlDemoRsp), nil
+}
+
+// RegisterGreeterGRPCHandler 注册 GRPC 接口实现
 func RegisterGreeterGRPCHandler(gs *luchen.GRPCServer, e GreeterEndpoint, middlewares ...luchen.Middleware) {
 	impl := GetGreeterServiceImpl(e, middlewares...)
 	RegisterGreeterServer(gs, impl)
 }
 
-// RegisterGreeterHTTPHandler 注册HTTP请求路由
+// RegisterGreeterHTTPHandler 注册 HTTP 请求路由
 func RegisterGreeterHTTPHandler(hs *luchen.HTTPServer, e GreeterEndpoint, middlewares ...luchen.Middleware) {
 	impl := GetGreeterServiceImpl(e, middlewares...)
-	if impl.sayHelloDefine.Path != "" {
-		hs.Mux().Handle(impl.sayHelloDefine.Path, luchen.NewHTTPTransportServer(impl.sayHelloDefine))
+	if impl.sayhelloDefine.Path != "" {
+		hs.Mux().Handle(impl.sayhelloDefine.Path, luchen.NewHTTPTransportServer(impl.sayhelloDefine))
+	}
+	if impl.pingDefine.Path != "" {
+		hs.Mux().Handle(impl.pingDefine.Path, luchen.NewHTTPTransportServer(impl.pingDefine))
+	}
+	if impl.getuserDefine.Path != "" {
+		hs.Mux().Handle(impl.getuserDefine.Path, luchen.NewHTTPTransportServer(impl.getuserDefine))
+	}
+	if impl.curldemoDefine.Path != "" {
+		hs.Mux().Handle(impl.curldemoDefine.Path, luchen.NewHTTPTransportServer(impl.curldemoDefine))
 	}
 }
