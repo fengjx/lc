@@ -35,7 +35,7 @@ type GreeterServiceImpl struct {
 	UnimplementedGreeterServer
 	middlewares    []luchen.Middleware
 	endpoint       GreeterEndpoint
-	sayHelloDefine *luchen.EdnpointDefine
+	sayHelloDefine *luchen.EndpointDefine
 	sayHello       grpctransport.Handler
 }
 
@@ -52,7 +52,7 @@ func GetGreeterServiceImpl(e GreeterEndpoint, middlewares ...luchen.Middleware) 
 }
 
 func newGreeterServiceImpl(e GreeterEndpoint, middlewares ...luchen.Middleware) *GreeterServiceImpl {
-	sayHelloDefine := &luchen.EdnpointDefine{
+	sayHelloDefine := &luchen.EndpointDefine{
 		Name:        "Greet.SayHello",
 		Path:        "/say-hello",
 		ReqType:     reflect.TypeOf(&HelloReq{}),
