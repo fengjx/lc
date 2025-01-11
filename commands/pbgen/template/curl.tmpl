@@ -30,7 +30,7 @@
 {{- end}}
 {{- end}}
 
-curl -X POST 'http://localhost:8080{{.HTTPPath}}' \
+curl -i -X POST 'http://localhost:8080{{.HTTPPath}}' \
   -H 'Content-Type: application/json' \
   -d '{
     {{- range $i, $field := .Request.Fields}}
