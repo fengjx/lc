@@ -114,7 +114,7 @@ func Register{{ .ServiceName }}HTTPHandler(hs *luchen.HTTPServer, e {{ .ServiceN
 	impl := Get{{ .ServiceName }}ServiceImpl(e, middlewares...)
 	{{- range .Methods }}
 	if impl.{{ .FieldName }}Define.Path != "" {
-		hs.Mux().Handle(impl.{{ .FieldName }}Define.Path, luchen.NewHTTPTransportServer(impl.{{ .FieldName }}Define))
+		hs.Handle(impl.{{ .FieldName }}Define)
 	}
 	{{- end }}
-} 
+}
