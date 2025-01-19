@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package pb.pbgreet;
+
+import "test/proto/hello.proto";
+
+option go_package = "github.com/fengjx/lctest/proto/pbgreet";
+
+// gomodpath=github.com/fengjx/lctest
+// epath=endpoint/api/great
+
+// Greeter greet 示例
+service Greeter {
+  // SayHello Sends a greeting
+  // http.path=/greeter/say-hello
+  rpc SayHello(HelloReq) returns (HelloResp) {}
+
+  // Ping ping service
+  // http.path=/greeter/ping
+  rpc Ping(PingReq) returns (PingResp) {}
+
+  rpc GetUser(GetUserReq) returns (GetUserResp) {}
+
+  // CurlDemo 示例
+  // http.path=/greeter/curl-demo
+  rpc CurlDemo(CurlDemoReq) returns (CurlDemoRsp) {}
+}
+
+// The request message containing the user's name.
+message HelloReq {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloResp {
+  string message = 1;
+}
+
+message PingReq {
+  string name = 1;
+}
+
+message PingResp {
+  string message = 1;
+}
+
+message GetUserReq {
+  string id = 1;
+}
+
+message GetUserResp {
+  pb.user.User user = 1;
+}
+
+// 应用类型枚举
+enum AppType {
+  APP_TYPE_UNSPECIFIED = 0;  // 未指定
+  APP_TYPE_WEB = 1;          // Web应用
+  APP_TYPE_MOBILE = 2;       // 移动应用
+  APP_TYPE_DESKTOP = 3;      // 桌面应用
+}
+
+message CurlDemoReq {
+  string name = 1;
+  AppType app_type = 2;  // 应用类型
+  pb.user.User user = 3;
+  repeated pb.user.User users = 4;
+}
+
+message CurlDemoRsp {
+  string message = 1;
+}

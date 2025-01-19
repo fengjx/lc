@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package pb.user;
+
+option go_package = "github.com/fengjx/lctest/proto/pbuser";
+
+// gomodpath=github.com/fengjx/lctest
+
+message User {
+  string name = 1;
+  int32 age = 2;
+  float height = 3;
+  bool is_married = 4;
+}

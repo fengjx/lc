@@ -1,8 +1,9 @@
 module github.com/fengjx/lc
 
-go 1.22.0
+go 1.23
 
 require (
+	github.com/emicklei/proto v1.14.0
 	github.com/fatih/color v1.16.0
 	github.com/go-sql-driver/mysql v1.8.0
 	github.com/google/go-github/v61 v61.0.0

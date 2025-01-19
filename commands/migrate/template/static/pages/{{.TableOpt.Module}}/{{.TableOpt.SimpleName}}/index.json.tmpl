@@ -86,7 +86,7 @@
                   {{range $i, $e := .Table.Columns}}{{if not (eq $e.Name $pk.Name) }}
                   {
                     "label": "{{LineString $e.Comment}}",
-                    "type": "input-text",
+                    "type": "{{InputType .SQLType}}",
                     "name": "{{$e.Name}}"
                   }{{if lt (Add $i 1) $colLen}},{{end}}{{end}}
                   {{end}}
@@ -137,7 +137,8 @@
         {{range $i, $e := .Table.Columns}}
         {
           "label": "{{LineString $e.Comment}}",
-          "name": "{{$e.Name}}"
+          "name": "{{$e.Name}}"{{if $e.IsTimeType}},
+          "tpl": "${ {{$e.Name}} | date:YYYY-MM-DD hh\\:mm\\:ss:x}"{{end}}
         },
         {{end}}
         {
@@ -159,7 +160,8 @@
                     {
                       "label": "{{LineString $e.Comment}}",
                       "type": "static",
-                      "name": "{{$e.Name}}"
+                      "name": "{{$e.Name}}"{{if $e.IsTimeType}},
+                      "tpl": "${ {{$e.Name}} | date:YYYY-MM-DD hh\\:mm\\:ss:x}"{{end}}
                     }{{if lt (Add $i 1) $colLen}},{{end}}
                     {{end}}
                   ]

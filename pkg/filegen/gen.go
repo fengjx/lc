@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/fengjx/lc/pkg/formater"
 )
 
 // EntryFilter 模板文件过滤
@@ -55,7 +56,7 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 		parent = g.BaseTmplDir
 	}
 	for _, entry := range entries {
-		if g.EntryFilter != nil && !g.EntryFilter(g.ctx, entry) {
+		if g.EntryFilter != nil && g.EntryFilter(g.ctx, entry) {
 			continue
 		}
 		path := filepath.Join(parent, entry.Name())
@@ -121,14 +122,19 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			color.Red("读取文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
-		newbytes, err := g.parse(string(bs), g.Attr)
+		codeBys, err := g.parse(string(bs), g.Attr)
 		if err != nil {
 			color.Red("解析模板文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
-		err = os.WriteFile(targetFile, newbytes, 0600)
+		err = os.WriteFile(targetFile, codeBys, 0600)
 		if err != nil {
 			color.Red("生成文件失败：%s，失败原因：%s", targetFile, err.Error())
+			return
+		}
+		err = formater.FormatFile(targetFile)
+		if err != nil {
+			color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
 	}

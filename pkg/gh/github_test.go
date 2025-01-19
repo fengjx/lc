@@ -25,25 +25,25 @@ func TestGetReleaseI(t *testing.T) {
 func TestDownloadReleaseAsset(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
-	getDownloadDir := func(asset *github.ReleaseAsset) string {
+	getDownloadDir := func(asset *github.ReleaseAsset, release *github.RepositoryRelease) string {
 		return ".lc/template/start-template.zip"
 	}
-	assertFilter := func(releases []*github.RepositoryRelease) *github.ReleaseAsset {
+	assetFilter := func(releases []*github.RepositoryRelease) (*github.ReleaseAsset, *github.RepositoryRelease) {
 		sort.Slice(releases, func(i, j int) bool {
 			return releases[i].PublishedAt.After(releases[j].PublishedAt.Time)
 		})
 		if len(releases) == 0 {
-			return nil
+			return nil, nil
 		}
 		release := releases[0]
 		for _, item := range release.Assets {
 			if item.Name != nil && *item.Name == "start-template.zip" {
-				return item
+				return item, release
 			}
 		}
-		return nil
+		return nil, nil
 	}
-	asset, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assertFilter, getDownloadDir)
+	asset, _, err := gh.DownloadReleaseAsset(ctx, "fengjx", "lc", assetFilter, getDownloadDir)
 	if err != nil {
 		t.Fatal(err)
 	}

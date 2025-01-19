@@ -5,7 +5,7 @@
 # Feel free to remove those if you don't want/need to use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
-version: 1
+version: 2
 
 before:
   hooks:
@@ -20,6 +20,7 @@ builds:
       - windows
       - darwin
     goarch: ['386', 'amd64', 'arm64', 'arm']
+    main: ./main.go
     ldflags:
       - "-s -w -X main.version={{.Tag}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=github-action"
 
