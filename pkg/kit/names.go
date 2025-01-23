@@ -131,6 +131,17 @@ func KebabCase(s string) string {
 	return result.String()
 }
 
+// ToLowerAndTrim 将字符串转换为小写，并移除特殊字符（如 - 和 _）
+func ToLowerAndTrim(s string) string {
+	var result strings.Builder
+	for _, r := range strings.ToLower(s) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			result.WriteRune(r)
+		}
+	}
+	return result.String()
+}
+
 var LintGonicMapper = map[string]bool{
 	"API":   true,
 	"ASCII": true,

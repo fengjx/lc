@@ -240,6 +240,7 @@ func newGen(tmplDir string, eFS *embed.FS, config *Config, table *Table) *gen {
 	if tableOpt.SimpleName == "" {
 		tableOpt.SimpleName = table.Name
 	}
+	tableOpt.SimpleNameLower = kit.ToLowerAndTrim(tableOpt.SimpleName)
 	tableOpt.SimpleName = kit.SnakeCase(tableOpt.SimpleName)
 	attr := map[string]any{
 		"Var":      config.Target.Custom.Var,

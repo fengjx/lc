@@ -60,7 +60,7 @@ func Register{{$SimpleGonicCase}}AdminHTTPHandler(hs *luchen.HTTPServer) {
 		Name:     "{{$SimpleGonicCase}}Admin.Query",
 		Path:     "/admin/{{.TableOpt.Module}}/{{.TableOpt.SimpleName}}/query",
 		ReqType:  reflect.TypeOf(&daox.QueryRecord{}),
-		RspType:  reflect.TypeOf(&types.AmisResp{}),
+		RspType:  reflect.TypeOf(&types.AmisPageResp[*entity.{{$ObjName}}]{}),
 		Endpoint: e.makeQueryEndpoint(),
 	})
 }
