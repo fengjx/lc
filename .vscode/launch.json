@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "pbgen",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}",
+      "args": ["pbgen", "-f", "test/proto/greet.proto", "-o", "test/gen"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "migrate",
+      "type": "go",
+      "request": "launch",
+      "program": "${workspaceFolder}",
+      "args": ["migrate", "-c", "t/migrate/config-local.yml"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "DEBUG": "1"
+      }
+    }
+  ]
+}

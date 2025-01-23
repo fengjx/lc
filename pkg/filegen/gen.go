@@ -122,20 +122,19 @@ func (g *FileGen) render(parent string, entries []os.DirEntry) {
 			color.Red("读取文件失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
-		newbytes, err := g.parse(string(bs), g.Attr)
+		codeBys, err := g.parse(string(bs), g.Attr)
 		if err != nil {
 			color.Red("解析模板文件失败：%s，失败原因：%s", path, err.Error())
-			return
-		}
-		codeBys := newbytes
-		err = formater.FormatFile(targetFile)
-		if err != nil {
-			color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
 		err = os.WriteFile(targetFile, codeBys, 0600)
 		if err != nil {
 			color.Red("生成文件失败：%s，失败原因：%s", targetFile, err.Error())
+			return
+		}
+		err = formater.FormatFile(targetFile)
+		if err != nil {
+			color.Red("格式化代码失败：%s，失败原因：%s", path, err.Error())
 			return
 		}
 	}
