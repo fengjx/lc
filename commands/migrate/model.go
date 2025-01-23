@@ -14,10 +14,11 @@ type DS struct {
 type Var map[string]string
 
 type TableConfig struct {
-	Module     string `yaml:"module"`
-	SimpleName string `yaml:"simple-name"`
-	UseAdmin   *bool  `yaml:"use-admin"`
-	Var        Var    `yaml:"var"`
+	Module          string `yaml:"module"`
+	SimpleName      string `yaml:"simple-name"`
+	UseAdmin        *bool  `yaml:"use-admin"`
+	Var             Var    `yaml:"var"`
+	SimpleNameLower string `-`
 }
 
 type ReverseTarget struct {
