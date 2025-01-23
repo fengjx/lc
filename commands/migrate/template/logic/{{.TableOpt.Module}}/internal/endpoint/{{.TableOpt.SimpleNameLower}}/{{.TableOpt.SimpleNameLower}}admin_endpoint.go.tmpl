@@ -1,4 +1,4 @@
-package {{.TableOpt.SimpleName}}
+package {{.TableOpt.SimpleNameLower}}
 {{$ObjName := GonicCase .Table.Name}}
 {{$SimpleGonicCase := GonicCase .TableOpt.SimpleName}}
 {{$SimpleFirstLower := FirstLower $SimpleGonicCase}}
