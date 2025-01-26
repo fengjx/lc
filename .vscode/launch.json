@@ -2,6 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "simple-api",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/template/simple",
+      "cwd": "${workspaceFolder}/template/simple",
+      "console": "integratedTerminal",
+      "env": {
+        "DEBUG": "1"
+      }
+    },
+    {
       "name": "pbgen",
       "type": "go",
       "request": "launch",
