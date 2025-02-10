@@ -14,7 +14,7 @@ import (
 	"github.com/fengjx/lc/pkg/kit"
 )
 
-//go:embed template/*
+//go:embed all:template/**
 var embedFS embed.FS
 
 const tipsLucky = `
@@ -61,8 +61,8 @@ var flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "template",
 		Aliases: []string{"t"},
-		Usage:   "使用模板，可选参数：lucky, httponly, micro",
-		Value:   "httponly",
+		Usage:   "使用模板，可选参数：simple（简单工程）, standard（http + grpc协议工程）, lucky（基于amis的管理后台基础工程）",
+		Value:   "simple",
 	},
 }
 

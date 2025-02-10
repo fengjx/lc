@@ -1,0 +1,10 @@
+package endpoint
+
+import (
+	"{{.gomod}}/endpoint/hello"
+	"github.com/fengjx/luchen"
+)
+
+func Init(hs *luchen.HTTPServer) {
+	hello.RegisterHelloHTTPHandler(hs)
+}
