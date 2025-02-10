@@ -1,0 +1,40 @@
+package app
+
+import (
+	"context"
+	"reflect"
+
+	"github.com/fengjx/luchen"
+	"{{.gomod}}/common/types"
+	"{{.gomod}}/logic/sys/internal/data/consts"
+	"{{.gomod}}/logic/sys/internal/protocol"
+	"{{.gomod}}/logic/sys/internal/service"
+	"{{.gomod}}/transport/http"
+)
+
+func RegisterAppTTPHandler(hs *luchen.HTTPServer) {
+	e := &appEndpoint{}
+	hs.Handle(&luchen.EndpointDefine{
+		Endpoint: e.makeFetchDataEndpoint(),
+		Name:     "App.FetchData",
+		Path:     http.OpenAPI + "/app/data",
+		ReqType:  reflect.TypeOf(&types.Empty{}),
+		RspType:  reflect.TypeOf(&protocol.AppDataResp{}),
+	})
+}
+
+type appEndpoint struct {
+}
+
+func (e *appEndpoint) makeFetchDataEndpoint() luchen.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		appConfig := service.ConfigSvc.ScopeConfig(
+			consts.ScopeApp,
+		)
+		dict := service.DictSvc.GetGroupDict()
+		return protocol.AppDataResp{
+			Config: appConfig,
+			Dict:   dict,
+		}, nil
+	}
+}

@@ -1,0 +1,20 @@
+package endpoint
+
+import (
+	"github.com/fengjx/luchen"
+	"{{.gomod}}/logic/sys/internal/endpoint/app"
+	"{{.gomod}}/logic/sys/internal/endpoint/config"
+	"{{.gomod}}/logic/sys/internal/endpoint/dict"
+	"{{.gomod}}/logic/sys/internal/endpoint/login"
+	"{{.gomod}}/logic/sys/internal/endpoint/menu"
+	"{{.gomod}}/logic/sys/internal/endpoint/user"
+)
+
+func Init(hs *luchen.HTTPServer) {
+	login.RegisterLoginTTPHandler(hs)
+	app.RegisterAppTTPHandler(hs)
+	config.RegisterConfigAdminTTPHandler(hs)
+	user.RegisterUserAdminEndpoint(hs)
+	dict.RegisterDictAdminTTPHandler(hs)
+	menu.RegisterMenuAdminTTPHandler(hs)
+}
