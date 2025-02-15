@@ -1,10 +1,11 @@
 package endpoint
 
 import (
-	"{{.gomod}}/endpoint/hello"
 	"github.com/fengjx/luchen"
+
+	"{{.gomod}}/endpoint/hello"
 )
 
 func Init(hs *luchen.HTTPServer) {
-	hello.RegisterHelloHTTPHandler(hs)
+	hello.RegisterGreeterHTTPHandler(hs)
 }

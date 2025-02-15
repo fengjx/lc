@@ -35,8 +35,8 @@ const tipsSimple = `
 
 var tmplTips = map[string]string{
 	"lucky":    tipsLucky,
-	"micro":    tipsSimple,
-	"httponly": tipsSimple,
+	"simple":   tipsSimple,
+	"standard": tipsSimple,
 }
 
 var Command = &cli.Command{
