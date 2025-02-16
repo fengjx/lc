@@ -10,10 +10,16 @@ import (
 
 	"{{.gomod}}/integration"
 	"{{.gomod}}/logic"
+	"{{.gomod}}/middleware"
 	"{{.gomod}}/transport/http"
 )
 
 func main() {
+	// 注册全局拦截器
+	luchen.UseGlobalHTTPMiddleware(
+		luchen.LogMiddleware,
+		middleware.AccessMiddleware,
+	)
 	httpServer := http.GetServer()
 	integration.Init()
 	logic.Init(httpServer)

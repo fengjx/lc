@@ -1,0 +1,5 @@
+server:
+  http:
+    server-name: "http:standard"
+  grpc:
+    server-name: "grpc:standard"

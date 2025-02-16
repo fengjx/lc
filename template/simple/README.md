@@ -1,0 +1,18 @@
+# simple
+
+## 快速开始
+
+启动服务
+```bash
+go mod tidy
+go run main.go
+```
+
+请求接口
+```bash
+curl -i 'http://localhost:8080/hello/say-hello' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "error"
+}'
+```
