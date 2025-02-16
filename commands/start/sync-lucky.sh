@@ -22,6 +22,7 @@ rm -rf ${remote_template}/.git
 # 递归查找并重命名
 echo "替换为.tmpl文件"
 find "${remote_template}" -type f -name "*.go" -execdir mv {} {}.tmpl \;
+find "${remote_template}" -type f -name "*.proto" -execdir mv {} {}.tmpl \;
 find "${remote_template}" -type f -name "*.yml" -execdir mv {} {}.tmpl \;
 find "${remote_template}" -type f -name "*.md" -execdir mv {} {}.tmpl \;
 find "${remote_template}" -type f -name "*.conf" -execdir mv {} {}.tmpl \;

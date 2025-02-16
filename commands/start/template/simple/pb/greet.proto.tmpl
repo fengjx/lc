@@ -2,16 +2,16 @@ syntax = "proto3";
 
 package pbgreet;
 
-option go_package = "github.com/fengjx/lc/standard/logic/hello/internal/proto/pbgreet";
+option go_package = "{{.gomod}}/proto/pbgreet";
 
-// gomodpath=github.com/fengjx/lc/standard
-// epath=logic/hello/internal/endpoint/greet
+// gomodpath={{.gomod}}
+// epath=endpoint/hello
 
 // The greeting service definition.
 service Greeter {
   // SayHello Sends a greeting
-  // http.path=/hello/say-hello
-  rpc SayHello(HelloReq) returns (HelloResp) {}
+  // http.path=/say-hello
+  rpc SayHello(HelloReq) returns (HelloResp);
 }
 
 // The request message containing the user's name.

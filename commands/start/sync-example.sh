@@ -22,6 +22,7 @@ function make_template() {
 
     # 递归查找并重命名
     find "${target_dir}" -type f -name "*.go" -execdir mv {} {}.tmpl \;
+    find "${target_dir}" -type f -name "*.proto" -execdir mv {} {}.tmpl \;
     find "${target_dir}" -type f -name "*.yml" -execdir mv {} {}.tmpl \;
     find "${target_dir}" -type f -name "*.md" -execdir mv {} {}.tmpl \;
     find "${target_dir}" -type f -name "*.conf" -execdir mv {} {}.tmpl \;
