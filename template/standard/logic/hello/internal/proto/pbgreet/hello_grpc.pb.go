@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.1
-// source: proto/hello/hello.proto
+// source: pb/hello/hello.proto
 
 package pbgreet
 
@@ -105,5 +105,5 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/hello/hello.proto",
+	Metadata: "pb/hello/hello.proto",
 }
