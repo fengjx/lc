@@ -11,7 +11,7 @@ option go_package = "github.com/fengjx/lc/simple/proto/pbgreet";
 service Greeter {
   // SayHello Sends a greeting
   // http.path=/say-hello
-  rpc SayHello(HelloReq) returns (HelloResp) {}
+  rpc SayHello(HelloReq) returns (HelloResp);
 }
 
 // The request message containing the user's name.
