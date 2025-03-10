@@ -224,34 +224,17 @@ func findProtoFiles(pattern string) ([]string, error) {
 		return nil, fmt.Errorf("获取基础目录绝对路径失败: %v", err)
 	}
 
-	// 构建文件匹配模式
-	var filePattern string
-	if strings.Contains(pattern, "**") {
-		// 对于递归匹配，我们只使用文件名部分
-		filePattern = filepath.Base(pattern)
-		// 将 ** 替换为 *，因为我们只关心文件名匹配
-		filePattern = strings.ReplaceAll(filePattern, "**", "*")
-	} else {
-		// 非递归模式使用完整模式
-		filePattern = filepath.Base(pattern)
-	}
+	filePattern := filepath.Base(pattern)
 
 	var protoFiles []string
-	// 是否需要递归搜索
-	isRecursive := strings.Contains(pattern, "**")
-
 	err = filepath.Walk(absBaseDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			color.Yellow("查找路径失败 %s: %v", path, err)
+			color.Red("查找路径失败 %s: %v", path, err)
 			return nil
 		}
 
 		// 跳过目录
 		if info.IsDir() {
-			// 如果不是递归模式，且不是基础目录，则跳过子目录
-			if !isRecursive && path != absBaseDir {
-				return filepath.SkipDir
-			}
 			return nil
 		}
 
@@ -263,12 +246,14 @@ func findProtoFiles(pattern string) ([]string, error) {
 		// 检查文件名是否匹配模式
 		match, err := filepath.Match(filePattern, info.Name())
 		if err != nil {
-			color.Yellow("查找文件失败 %s: %v", path, err)
+			color.Red("查找文件失败 %s: %v", path, err)
 			return nil
 		}
 
 		if match {
-			protoFiles = append(protoFiles, path)
+			// 将相对路径添加到结果列表中
+			// 否则正常文件会报 File does not reside within any path specified 异常
+			protoFiles = append(protoFiles, strings.Replace(path, absBaseDir, baseDir, 1))
 		}
 
 		return nil
