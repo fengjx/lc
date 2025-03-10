@@ -199,10 +199,98 @@ type PbInfo struct {
 	Enums           map[string]*Enum    // 枚举类型映射表
 }
 
+// findProtoFiles 查找匹配通配符的 proto 文件
+func findProtoFiles(pattern string) ([]string, error) {
+	// 如果不包含通配符，直接返回原始路径
+	if !strings.Contains(pattern, "*") {
+		// 检查是否为目录
+		fileInfo, err := os.Stat(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("文件不存在: %v", err)
+		}
+		if fileInfo.IsDir() {
+			return nil, fmt.Errorf("指定的路径是一个目录: %s", pattern)
+		}
+		return []string{pattern}, nil
+	}
+
+	// 获取搜索的基础目录
+	baseDir := filepath.Dir(pattern)
+	if strings.Contains(baseDir, "*") {
+		baseDir = "."
+	}
+	absBaseDir, err := filepath.Abs(baseDir)
+	if err != nil {
+		return nil, fmt.Errorf("获取基础目录绝对路径失败: %v", err)
+	}
+
+	// 构建文件匹配模式
+	var filePattern string
+	if strings.Contains(pattern, "**") {
+		// 对于递归匹配，我们只使用文件名部分
+		filePattern = filepath.Base(pattern)
+		// 将 ** 替换为 *，因为我们只关心文件名匹配
+		filePattern = strings.ReplaceAll(filePattern, "**", "*")
+	} else {
+		// 非递归模式使用完整模式
+		filePattern = filepath.Base(pattern)
+	}
+
+	var protoFiles []string
+	// 是否需要递归搜索
+	isRecursive := strings.Contains(pattern, "**")
+
+	err = filepath.Walk(absBaseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			color.Yellow("查找路径失败 %s: %v", path, err)
+			return nil
+		}
+
+		// 跳过目录
+		if info.IsDir() {
+			// 如果不是递归模式，且不是基础目录，则跳过子目录
+			if !isRecursive && path != absBaseDir {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// 检查是否是 .proto 文件
+		if !strings.HasSuffix(info.Name(), ".proto") {
+			return nil
+		}
+
+		// 检查文件名是否匹配模式
+		match, err := filepath.Match(filePattern, info.Name())
+		if err != nil {
+			color.Yellow("查找文件失败 %s: %v", path, err)
+			return nil
+		}
+
+		if match {
+			protoFiles = append(protoFiles, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("遍历目录失败: %v", err)
+	}
+
+	if len(protoFiles) == 0 {
+		return nil, fmt.Errorf("未找到匹配的 proto 文件: %s", pattern)
+	}
+
+	return protoFiles, nil
+}
+
 // action 是命令的主要执行函数
 func action(ctx *cli.Context) error {
-	protoFile := ctx.String("file")
+	pattern := ctx.String("file")
 	outDir := ctx.String("out")
+	goOpt := ctx.String("go_opt")
+	grpcOpt := ctx.String("grpc_opt")
 
 	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -210,65 +298,77 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 
-	// 解析 proto 文件获取服务信息
-	pbiInfo, err := parseProtoFile(protoFile)
+	// 查找所有匹配的 proto 文件
+	protoFiles, err := findProtoFiles(pattern)
 	if err != nil {
-		color.Red("解析 proto 文件失败: %v", err)
+		color.Red("%v", err)
 		return err
 	}
 
-	goOpt := ctx.String("go_opt")
-	grpcOpt := ctx.String("grpc_opt")
-	// 如果存在 GoModPath，将其添加到 go_opt 中
-	if pbiInfo.GoModPath != "" {
-		if goOpt != "" {
-			goOpt = goOpt + ",module=" + pbiInfo.GoModPath
-		} else {
-			goOpt = "module=" + pbiInfo.GoModPath
+	// 遍历处理每个 proto 文件
+	for _, protoFile := range protoFiles {
+		color.Green("处理文件: %s", protoFile)
+
+		// 解析 proto 文件获取服务信息
+		pbiInfo, err := parseProtoFile(protoFile)
+		if err != nil {
+			color.Red("解析 proto 文件失败: %v", err)
+			return err
 		}
 
-		if grpcOpt != "" {
-			grpcOpt = grpcOpt + ",module=" + pbiInfo.GoModPath
-		} else {
-			grpcOpt = "module=" + pbiInfo.GoModPath
+		// 如果存在 GoModPath，将其添加到 go_opt 中
+		currentGoOpt := goOpt
+		currentGrpcOpt := grpcOpt
+		if pbiInfo.GoModPath != "" {
+			if currentGoOpt != "" {
+				currentGoOpt = currentGoOpt + ",module=" + pbiInfo.GoModPath
+			} else {
+				currentGoOpt = "module=" + pbiInfo.GoModPath
+			}
+
+			if currentGrpcOpt != "" {
+				currentGrpcOpt = currentGrpcOpt + ",module=" + pbiInfo.GoModPath
+			} else {
+				currentGrpcOpt = "module=" + pbiInfo.GoModPath
+			}
 		}
-	}
 
-	args := []string{
-		"--go_out=" + outDir,
-		"--go-grpc_out=" + outDir,
-	}
-	if goOpt != "" {
-		args = append(args, "--go_opt="+goOpt)
-	}
-	if grpcOpt != "" {
-		args = append(args, "--go-grpc_opt="+grpcOpt)
-	}
-	args = append(args, protoFile)
+		args := []string{
+			"--go_out=" + outDir,
+			"--go-grpc_out=" + outDir,
+		}
+		if currentGoOpt != "" {
+			args = append(args, "--go_opt="+currentGoOpt)
+		}
+		if currentGrpcOpt != "" {
+			args = append(args, "--go-grpc_opt="+currentGrpcOpt)
+		}
+		args = append(args, protoFile)
 
-	cmd := execx.WrapCmd("protoc", args)
-	if _, err := execx.Run(cmd, ""); err != nil {
-		color.Red("执行 protoc 命令失败: %v", err)
-		return err
-	}
+		cmd := execx.WrapCmd("protoc", args)
+		if _, err := execx.Run(cmd, ""); err != nil {
+			color.Red("执行 protoc 命令失败: %v", err)
+			return err
+		}
 
-	if pbiInfo.ServiceName == "" {
-		return nil
-	}
+		if pbiInfo.ServiceName == "" {
+			continue
+		}
 
-	// 生成 handler 文件
-	if err := genHandlerFile(pbiInfo, outDir); err != nil {
-		return err
-	}
+		// 生成 handler 文件
+		if err := genHandlerFile(pbiInfo, outDir); err != nil {
+			return err
+		}
 
-	// 生成 endpoint 相关文件
-	if err := genEndpointFiles(pbiInfo, outDir); err != nil {
-		return err
-	}
+		// 生成 endpoint 相关文件
+		if err := genEndpointFiles(pbiInfo, outDir); err != nil {
+			return err
+		}
 
-	// 生成 curl 命令脚本文件
-	if err := genCurlCmdFiles(pbiInfo, outDir); err != nil {
-		return err
+		// 生成 curl 命令脚本文件
+		if err := genCurlCmdFiles(pbiInfo, outDir); err != nil {
+			return err
+		}
 	}
 
 	return nil
