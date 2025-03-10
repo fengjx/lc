@@ -203,31 +203,83 @@ type PbInfo struct {
 func findProtoFiles(pattern string) ([]string, error) {
 	// 如果不包含通配符，直接返回原始路径
 	if !strings.Contains(pattern, "*") {
+		// 检查是否为目录
+		fileInfo, err := os.Stat(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("文件不存在: %v", err)
+		}
+		if fileInfo.IsDir() {
+			return nil, fmt.Errorf("指定的路径是一个目录: %s", pattern)
+		}
 		return []string{pattern}, nil
 	}
 
-	// 获取绝对路径
-	absPattern, err := filepath.Abs(pattern)
+	// 获取搜索的基础目录
+	baseDir := filepath.Dir(pattern)
+	if strings.Contains(baseDir, "*") {
+		baseDir = "."
+	}
+	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
-		return nil, fmt.Errorf("获取绝对路径失败: %v", err)
+		return nil, fmt.Errorf("获取基础目录绝对路径失败: %v", err)
 	}
 
-	// 使用 filepath.Glob 进行文件匹配
-	matches, err := filepath.Glob(absPattern)
-	if err != nil {
-		return nil, fmt.Errorf("匹配文件失败: %v", err)
+	// 构建文件匹配模式
+	var filePattern string
+	if strings.Contains(pattern, "**") {
+		// 对于递归匹配，我们只使用文件名部分
+		filePattern = filepath.Base(pattern)
+		// 将 ** 替换为 *，因为我们只关心文件名匹配
+		filePattern = strings.ReplaceAll(filePattern, "**", "*")
+	} else {
+		// 非递归模式使用完整模式
+		filePattern = filepath.Base(pattern)
 	}
 
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("未找到匹配的 proto 文件: %s", pattern)
-	}
-
-	// 过滤出 .proto 文件
 	var protoFiles []string
-	for _, match := range matches {
-		if strings.HasSuffix(match, ".proto") {
-			protoFiles = append(protoFiles, match)
+	// 是否需要递归搜索
+	isRecursive := strings.Contains(pattern, "**")
+
+	err = filepath.Walk(absBaseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			color.Yellow("查找路径失败 %s: %v", path, err)
+			return nil
 		}
+
+		// 跳过目录
+		if info.IsDir() {
+			// 如果不是递归模式，且不是基础目录，则跳过子目录
+			if !isRecursive && path != absBaseDir {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// 检查是否是 .proto 文件
+		if !strings.HasSuffix(info.Name(), ".proto") {
+			return nil
+		}
+
+		// 检查文件名是否匹配模式
+		match, err := filepath.Match(filePattern, info.Name())
+		if err != nil {
+			color.Yellow("查找文件失败 %s: %v", path, err)
+			return nil
+		}
+
+		if match {
+			protoFiles = append(protoFiles, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("遍历目录失败: %v", err)
+	}
+
+	if len(protoFiles) == 0 {
+		return nil, fmt.Errorf("未找到匹配的 proto 文件: %s", pattern)
 	}
 
 	return protoFiles, nil

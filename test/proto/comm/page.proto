@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package comm;
+
+option go_package = "github.com/fengjx/lctest/proto/pbcomm";
+
+// gomodpath=github.com/fengjx/lctest
+
+// Page 分页信息
+message Page {
+  int64 total = 1;    // 总数，服务端返回
+  int64 offset = 2;   // 偏移量，客户端传入，同时服务端计算下一个offset
+  int64 limit = 3;    // 限制，客户端传入
+  bool has_next = 4;  // 是否有下一页，服务端返回
+}

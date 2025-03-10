@@ -19,7 +19,13 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}",
-      "args": ["pbgen", "-f", "test/proto/greet.proto", "-o", "test/gen"],
+      "args": [
+        "pbgen",
+        "-f",
+        "/Users/fengjianxin/workspaces/work/tears/tearssvr/proto/**",
+        "-o",
+        "test/gen"
+      ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
     },
