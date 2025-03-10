@@ -199,10 +199,46 @@ type PbInfo struct {
 	Enums           map[string]*Enum    // 枚举类型映射表
 }
 
+// findProtoFiles 查找匹配通配符的 proto 文件
+func findProtoFiles(pattern string) ([]string, error) {
+	// 如果不包含通配符，直接返回原始路径
+	if !strings.Contains(pattern, "*") {
+		return []string{pattern}, nil
+	}
+
+	// 获取绝对路径
+	absPattern, err := filepath.Abs(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("获取绝对路径失败: %v", err)
+	}
+
+	// 使用 filepath.Glob 进行文件匹配
+	matches, err := filepath.Glob(absPattern)
+	if err != nil {
+		return nil, fmt.Errorf("匹配文件失败: %v", err)
+	}
+
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("未找到匹配的 proto 文件: %s", pattern)
+	}
+
+	// 过滤出 .proto 文件
+	var protoFiles []string
+	for _, match := range matches {
+		if strings.HasSuffix(match, ".proto") {
+			protoFiles = append(protoFiles, match)
+		}
+	}
+
+	return protoFiles, nil
+}
+
 // action 是命令的主要执行函数
 func action(ctx *cli.Context) error {
-	protoFile := ctx.String("file")
+	pattern := ctx.String("file")
 	outDir := ctx.String("out")
+	goOpt := ctx.String("go_opt")
+	grpcOpt := ctx.String("grpc_opt")
 
 	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -210,65 +246,77 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 
-	// 解析 proto 文件获取服务信息
-	pbiInfo, err := parseProtoFile(protoFile)
+	// 查找所有匹配的 proto 文件
+	protoFiles, err := findProtoFiles(pattern)
 	if err != nil {
-		color.Red("解析 proto 文件失败: %v", err)
+		color.Red("%v", err)
 		return err
 	}
 
-	goOpt := ctx.String("go_opt")
-	grpcOpt := ctx.String("grpc_opt")
-	// 如果存在 GoModPath，将其添加到 go_opt 中
-	if pbiInfo.GoModPath != "" {
-		if goOpt != "" {
-			goOpt = goOpt + ",module=" + pbiInfo.GoModPath
-		} else {
-			goOpt = "module=" + pbiInfo.GoModPath
+	// 遍历处理每个 proto 文件
+	for _, protoFile := range protoFiles {
+		color.Green("处理文件: %s", protoFile)
+
+		// 解析 proto 文件获取服务信息
+		pbiInfo, err := parseProtoFile(protoFile)
+		if err != nil {
+			color.Red("解析 proto 文件失败: %v", err)
+			return err
 		}
 
-		if grpcOpt != "" {
-			grpcOpt = grpcOpt + ",module=" + pbiInfo.GoModPath
-		} else {
-			grpcOpt = "module=" + pbiInfo.GoModPath
+		// 如果存在 GoModPath，将其添加到 go_opt 中
+		currentGoOpt := goOpt
+		currentGrpcOpt := grpcOpt
+		if pbiInfo.GoModPath != "" {
+			if currentGoOpt != "" {
+				currentGoOpt = currentGoOpt + ",module=" + pbiInfo.GoModPath
+			} else {
+				currentGoOpt = "module=" + pbiInfo.GoModPath
+			}
+
+			if currentGrpcOpt != "" {
+				currentGrpcOpt = currentGrpcOpt + ",module=" + pbiInfo.GoModPath
+			} else {
+				currentGrpcOpt = "module=" + pbiInfo.GoModPath
+			}
 		}
-	}
 
-	args := []string{
-		"--go_out=" + outDir,
-		"--go-grpc_out=" + outDir,
-	}
-	if goOpt != "" {
-		args = append(args, "--go_opt="+goOpt)
-	}
-	if grpcOpt != "" {
-		args = append(args, "--go-grpc_opt="+grpcOpt)
-	}
-	args = append(args, protoFile)
+		args := []string{
+			"--go_out=" + outDir,
+			"--go-grpc_out=" + outDir,
+		}
+		if currentGoOpt != "" {
+			args = append(args, "--go_opt="+currentGoOpt)
+		}
+		if currentGrpcOpt != "" {
+			args = append(args, "--go-grpc_opt="+currentGrpcOpt)
+		}
+		args = append(args, protoFile)
 
-	cmd := execx.WrapCmd("protoc", args)
-	if _, err := execx.Run(cmd, ""); err != nil {
-		color.Red("执行 protoc 命令失败: %v", err)
-		return err
-	}
+		cmd := execx.WrapCmd("protoc", args)
+		if _, err := execx.Run(cmd, ""); err != nil {
+			color.Red("执行 protoc 命令失败: %v", err)
+			return err
+		}
 
-	if pbiInfo.ServiceName == "" {
-		return nil
-	}
+		if pbiInfo.ServiceName == "" {
+			continue
+		}
 
-	// 生成 handler 文件
-	if err := genHandlerFile(pbiInfo, outDir); err != nil {
-		return err
-	}
+		// 生成 handler 文件
+		if err := genHandlerFile(pbiInfo, outDir); err != nil {
+			return err
+		}
 
-	// 生成 endpoint 相关文件
-	if err := genEndpointFiles(pbiInfo, outDir); err != nil {
-		return err
-	}
+		// 生成 endpoint 相关文件
+		if err := genEndpointFiles(pbiInfo, outDir); err != nil {
+			return err
+		}
 
-	// 生成 curl 命令脚本文件
-	if err := genCurlCmdFiles(pbiInfo, outDir); err != nil {
-		return err
+		// 生成 curl 命令脚本文件
+		if err := genCurlCmdFiles(pbiInfo, outDir); err != nil {
+			return err
+		}
 	}
 
 	return nil
