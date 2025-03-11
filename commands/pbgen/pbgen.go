@@ -40,10 +40,10 @@ var Command = &cli.Command{
 
 // flags 定义了命令行参数
 var flags = []cli.Flag{
-	&cli.StringFlag{
+	&cli.StringSliceFlag{
 		Name:     "file",
 		Aliases:  []string{"f"},
-		Usage:    "指定 proto 文件或路径",
+		Usage:    "指定 proto 文件或路径，支持多个文件和通配符",
 		Required: true,
 	},
 	&cli.StringFlag{
@@ -272,7 +272,7 @@ func findProtoFiles(pattern string) ([]string, error) {
 
 // action 是命令的主要执行函数
 func action(ctx *cli.Context) error {
-	pattern := ctx.String("file")
+	patterns := ctx.StringSlice("file")
 	outDir := ctx.String("out")
 	goOpt := ctx.String("go_opt")
 	grpcOpt := ctx.String("grpc_opt")
@@ -282,16 +282,32 @@ func action(ctx *cli.Context) error {
 		color.Red("创建输出目录失败: %v", err)
 		return err
 	}
+	color.Green("目标文件: %s", strings.Join(patterns, ","))
 
-	// 查找所有匹配的 proto 文件
-	protoFiles, err := findProtoFiles(pattern)
-	if err != nil {
-		color.Red("%v", err)
-		return err
+	var allProtoFiles []string
+	// 处理每个文件模式
+	for _, pattern := range patterns {
+		// 查找所有匹配的 proto 文件
+		protoFiles, err := findProtoFiles(pattern)
+		if err != nil {
+			color.Red("%v", err)
+			return err
+		}
+		allProtoFiles = append(allProtoFiles, protoFiles...)
+	}
+
+	// 去重
+	uniqueFiles := make(map[string]bool)
+	var finalProtoFiles []string
+	for _, file := range allProtoFiles {
+		if !uniqueFiles[file] {
+			uniqueFiles[file] = true
+			finalProtoFiles = append(finalProtoFiles, file)
+		}
 	}
 
 	// 遍历处理每个 proto 文件
-	for _, protoFile := range protoFiles {
+	for _, protoFile := range finalProtoFiles {
 		color.Green("处理文件: %s", protoFile)
 
 		// 解析 proto 文件获取服务信息
