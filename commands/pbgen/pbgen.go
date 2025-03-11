@@ -32,20 +32,15 @@ var curlTmpl string
 
 // Command 定义了 pbgen 子命令，用于根据 proto 文件生成代码
 var Command = &cli.Command{
-	Name:   "pbgen",
-	Usage:  "根据 proto 文件生成代码",
-	Flags:  flags,
-	Action: action,
+	Name:      "pbgen",
+	Usage:     "根据 proto 文件生成代码",
+	Flags:     flags,
+	Action:    action,
+	ArgsUsage: "[proto_files...]",
 }
 
 // flags 定义了命令行参数
 var flags = []cli.Flag{
-	&cli.StringSliceFlag{
-		Name:     "file",
-		Aliases:  []string{"f"},
-		Usage:    "指定 proto 文件或路径，支持多个文件和通配符",
-		Required: true,
-	},
 	&cli.StringFlag{
 		Name:    "out",
 		Aliases: []string{"o"},
@@ -200,7 +195,7 @@ type PbInfo struct {
 }
 
 // findProtoFiles 查找匹配通配符的 proto 文件
-func findProtoFiles(pattern string) ([]string, error) {
+func findProtoFiles(rootPath, pattern string) ([]string, error) {
 	// 如果不包含通配符，直接返回原始路径
 	if !strings.Contains(pattern, "*") {
 		// 检查是否为目录
@@ -208,23 +203,23 @@ func findProtoFiles(pattern string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("文件不存在: %v", err)
 		}
-		if fileInfo.IsDir() {
-			return nil, fmt.Errorf("指定的路径是一个目录: %s", pattern)
+		if !fileInfo.IsDir() {
+			// 不是目录则直接返回
+			return []string{pattern}, nil
 		}
-		return []string{pattern}, nil
 	}
 
 	// 获取搜索的基础目录
-	baseDir := filepath.Dir(pattern)
+	baseDir := pattern
+	filePattern := ""
 	if strings.Contains(baseDir, "*") {
-		baseDir = "."
+		baseDir = filepath.Dir(pattern)
+		filePattern = filepath.Base(pattern)
 	}
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, fmt.Errorf("获取基础目录绝对路径失败: %v", err)
 	}
-
-	filePattern := filepath.Base(pattern)
 
 	var protoFiles []string
 	err = filepath.Walk(absBaseDir, func(path string, info os.FileInfo, err error) error {
@@ -243,18 +238,18 @@ func findProtoFiles(pattern string) ([]string, error) {
 			return nil
 		}
 
-		// 检查文件名是否匹配模式
-		match, err := filepath.Match(filePattern, info.Name())
-		if err != nil {
-			color.Red("查找文件失败 %s: %v", path, err)
-			return nil
+		if filePattern != "" {
+			// 检查文件名是否匹配模式
+			match, _ := filepath.Match(filePattern, info.Name())
+			if !match {
+				return nil
+			}
 		}
-
-		if match {
-			// 将相对路径添加到结果列表中
-			// 否则正常文件会报 File does not reside within any path specified 异常
-			protoFiles = append(protoFiles, strings.Replace(path, absBaseDir, baseDir, 1))
-		}
+		// 将相对路径添加到结果列表中
+		// 否则正常文件会报 File does not reside within any path specified 异常
+		target := strings.Replace(path, rootPath, "", 1)
+		target = strings.TrimPrefix(target, "/")
+		protoFiles = append(protoFiles, target)
 
 		return nil
 	})
@@ -263,16 +258,22 @@ func findProtoFiles(pattern string) ([]string, error) {
 		return nil, fmt.Errorf("遍历目录失败: %v", err)
 	}
 
-	if len(protoFiles) == 0 {
-		return nil, fmt.Errorf("未找到匹配的 proto 文件: %s", pattern)
-	}
-
 	return protoFiles, nil
 }
 
 // action 是命令的主要执行函数
 func action(ctx *cli.Context) error {
-	patterns := ctx.StringSlice("file")
+	if ctx.NArg() == 0 {
+		return fmt.Errorf("请指定至少一个 proto 文件")
+	}
+
+	rootPath, err := os.Getwd()
+	if err != nil {
+		color.Red("获取当前目录失败: %v", err)
+		return err
+	}
+
+	patterns := ctx.Args().Slice()
 	outDir := ctx.String("out")
 	goOpt := ctx.String("go_opt")
 	grpcOpt := ctx.String("grpc_opt")
@@ -288,7 +289,7 @@ func action(ctx *cli.Context) error {
 	// 处理每个文件模式
 	for _, pattern := range patterns {
 		// 查找所有匹配的 proto 文件
-		protoFiles, err := findProtoFiles(pattern)
+		protoFiles, err := findProtoFiles(rootPath, pattern)
 		if err != nil {
 			color.Red("%v", err)
 			return err
@@ -305,11 +306,13 @@ func action(ctx *cli.Context) error {
 			finalProtoFiles = append(finalProtoFiles, file)
 		}
 	}
+	if len(finalProtoFiles) == 0 {
+		return fmt.Errorf("未找到 proto 文件: %s", strings.Join(patterns, ","))
+	}
 
+	color.Green("查找到 proto 文件 \n%s", strings.Join(finalProtoFiles, "\n"))
 	// 遍历处理每个 proto 文件
 	for _, protoFile := range finalProtoFiles {
-		color.Green("处理文件: %s", protoFile)
-
 		// 解析 proto 文件获取服务信息
 		pbiInfo, err := parseProtoFile(protoFile)
 		if err != nil {

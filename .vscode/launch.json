@@ -7,7 +7,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}",
-      "args": ["pbgen", "-f", "test/proto/*", "-o", "test/gen"],
+      "args": ["pbgen", "-o", "test/gen", "test/proto/*"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
     },
