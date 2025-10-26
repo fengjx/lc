@@ -30,6 +30,9 @@ var serviceTmpl string
 //go:embed template/curl.tmpl
 var curlTmpl string
 
+//go:embed template/helpers.pb.go.tmpl
+var helpersTmpl string
+
 // Command 定义了 pbgen 子命令，用于根据 proto 文件生成代码
 var Command = &cli.Command{
 	Name:      "pbgen",
@@ -355,6 +358,11 @@ func action(ctx *cli.Context) error {
 			return err
 		}
 
+		// 生成枚举辅助文件（即使没有服务也要生成）
+		if err := genHelpersFile(pbiInfo, outDir); err != nil {
+			return err
+		}
+
 		if pbiInfo.ServiceName == "" {
 			continue
 		}
@@ -473,6 +481,40 @@ func genCurlCmdFiles(pbiInfo *PbInfo, outDir string) error {
 	// 设置文件权限为可执行
 	if err := os.Chmod(curlFile, 0755); err != nil {
 		color.Red("设置文件权限失败: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// 生成辅助代码文件
+func genHelpersFile(pbiInfo *PbInfo, outDir string) error {
+	// 如果没有枚举，则跳过
+	if len(pbiInfo.Enums) == 0 {
+		return nil
+	}
+
+	protoFile := pbiInfo.ProtoFile
+	fileName := strings.TrimSuffix(filepath.Base(protoFile), ".proto")
+	var helpersFile string
+
+	if pbiInfo.GoPackage != "" {
+		pkgPath := strings.TrimPrefix(pbiInfo.GoPackage, "./")
+		// 去掉 gomodpath 的路径
+		pkgPath = strings.ReplaceAll(pkgPath, pbiInfo.GoModPath, "")
+		helpersFile = filepath.Join(outDir, pkgPath, fileName+"_helpers.pb.go")
+	} else {
+		helpersFile = filepath.Join(outDir, fileName+"_helpers.pb.go")
+	}
+
+	// 确保目录存在
+	if err := os.MkdirAll(filepath.Dir(helpersFile), 0755); err != nil {
+		color.Red("创建目录失败: %v", err)
+		return err
+	}
+
+	// 生成辅助文件，强制覆盖
+	if err := genFileFromTemplate(helpersFile, helpersTmpl, pbiInfo, true); err != nil {
 		return err
 	}
 

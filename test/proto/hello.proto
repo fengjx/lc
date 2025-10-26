@@ -12,3 +12,9 @@ message User {
   float height = 3;
   bool is_married = 4;
 }
+
+enum Status {
+  STATUS_NONE = 0;
+  STATUS_NORMAL = 1;
+  STATUS_DISABLE = 2;
+}
