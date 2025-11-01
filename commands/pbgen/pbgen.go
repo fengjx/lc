@@ -300,7 +300,7 @@ func action(ctx *cli.Context) error {
 		color.Red("创建输出目录失败: %v", err)
 		return err
 	}
-	color.Blue("目标文件: %s", strings.Join(patterns, ","))
+	color.Blue("从 %s 中查找目标文件: %s", rootPath, strings.Join(patterns, ","))
 
 	var allProtoFiles []string
 	// 处理每个文件模式
