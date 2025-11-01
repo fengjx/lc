@@ -377,10 +377,10 @@ func action(ctx *cli.Context) error {
 		// 添加所有 proto_path 参数
 		for _, protoPath := range protoPaths {
 			if protoPath != "" {
-				args = append(args, "--proto_path="+protoPath)
+				args = append(args, "-I="+protoPath)
 			}
 		}
-		args = append(args, "--proto_path=.")
+		args = append(args, "-I=" + rootPath)
 
 		// 添加所有 go_opt 参数
 		for _, goOpt := range currentGoOpts {
