@@ -50,20 +50,17 @@ var flags = []cli.Flag{
 		Usage:   "输出目录",
 		Value:   "./",
 	},
-	&cli.StringFlag{
+	&cli.StringSliceFlag{
 		Name:  "go_opt",
-		Usage: "protoc 的 go_opt 参数",
-		Value: "",
+		Usage: "与 protoc 的 go_opt 参数一致，可以指定多个值",
 	},
-	&cli.StringFlag{
+	&cli.StringSliceFlag{
 		Name:  "grpc_opt",
-		Usage: "protoc 的 go-grpc_opt 参数",
-		Value: "",
+		Usage: "与 protoc 的 go-grpc_opt 参数一致，可以指定多个值",
 	},
-	&cli.StringFlag{
+	&cli.StringSliceFlag{
 		Name:  "proto_path",
-		Usage: "protoc 的 proto_path 参数，指定依赖的 proto 文件路径",
-		Value: "",
+		Usage: "与 protoc 的 proto_path 参数一致，指定依赖的 proto 文件路径，可以指定多个值",
 	},
 	
 }
@@ -284,9 +281,9 @@ func action(ctx *cli.Context) error {
 
 	patterns := ctx.Args().Slice()
 	outDir := ctx.String("out")
-	goOpt := ctx.String("go_opt")
-	grpcOpt := ctx.String("grpc_opt")
-	protoPath := ctx.String("proto_path")
+	goOpts := ctx.StringSlice("go_opt")
+	grpcOpts := ctx.StringSlice("grpc_opt")
+	protoPaths := ctx.StringSlice("proto_path")
 
 	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -331,32 +328,58 @@ func action(ctx *cli.Context) error {
 		}
 
 		// 如果存在 GoModPath，将其添加到 go_opt 中
-		currentGoOpt := goOpt
-		currentGrpcOpt := grpcOpt
+		currentGoOpts := make([]string, len(goOpts))
+		copy(currentGoOpts, goOpts)
+		currentGrpcOpts := make([]string, len(grpcOpts))
+		copy(currentGrpcOpts, grpcOpts)
+		
 		if pbiInfo.GoModPath != "" {
-			if currentGoOpt != "" {
-				currentGoOpt = currentGoOpt + ",module=" + pbiInfo.GoModPath
-			} else {
-				currentGoOpt = "module=" + pbiInfo.GoModPath
+			// 检查是否已经有 module 选项
+			hasModule := false
+			for _, opt := range currentGoOpts {
+				if strings.HasPrefix(opt, "module=") {
+					hasModule = true
+					break
+				}
+			}
+			if !hasModule {
+				currentGoOpts = append(currentGoOpts, "module="+pbiInfo.GoModPath)
 			}
 
-			if currentGrpcOpt != "" {
-				currentGrpcOpt = currentGrpcOpt + ",module=" + pbiInfo.GoModPath
-			} else {
-				currentGrpcOpt = "module=" + pbiInfo.GoModPath
+			hasModule = false
+			for _, opt := range currentGrpcOpts {
+				if strings.HasPrefix(opt, "module=") {
+					hasModule = true
+					break
+				}
+			}
+			if !hasModule {
+				currentGrpcOpts = append(currentGrpcOpts, "module="+pbiInfo.GoModPath)
 			}
 		}
 
 		args := []string{
 			"--go_out=" + outDir,
 			"--go-grpc_out=" + outDir,
-			"--proto_path=" + protoPath,
+			"--proto_path=.",
 		}
-		if currentGoOpt != "" {
-			args = append(args, "--go_opt="+currentGoOpt)
+		// 添加所有 proto_path 参数
+		for _, protoPath := range protoPaths {
+			if protoPath != "" {
+				args = append(args, "--proto_path="+protoPath)
+			}
 		}
-		if currentGrpcOpt != "" {
-			args = append(args, "--go-grpc_opt="+currentGrpcOpt)
+		// 添加所有 go_opt 参数
+		for _, goOpt := range currentGoOpts {
+			if goOpt != "" {
+				args = append(args, "--go_opt="+goOpt)
+			}
+		}
+		// 添加所有 go-grpc_opt 参数
+		for _, grpcOpt := range currentGrpcOpts {
+			if grpcOpt != "" {
+				args = append(args, "--go-grpc_opt="+grpcOpt)
+			}
 		}
 		args = append(args, protoFile)
 
