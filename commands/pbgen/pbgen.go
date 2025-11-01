@@ -336,7 +336,7 @@ func action(ctx *cli.Context) error {
 	// 遍历处理每个 proto 文件
 	for _, protoFile := range finalProtoFiles {
 		// 解析 proto 文件获取服务信息
-		pbiInfo, err := parseProtoFile(protoFile)
+		pbiInfo, err := parseProtoFile(protoFile, protoPaths, rootPath)
 		if err != nil {
 			color.Red("解析 proto 文件失败: %v", err)
 			return err
@@ -649,6 +649,36 @@ func getFullTypeName(field *proto.NormalField) string {
 	return field.Type
 }
 
+// findImportFile 在多个 proto_path 中查找 import 文件
+func findImportFile(importPath string, protoPaths []string, rootPath string) (string, error) {
+	// 如果是绝对路径，直接尝试读取
+	if filepath.IsAbs(importPath) {
+		if _, err := os.Stat(importPath); err == nil {
+			return importPath, nil
+		}
+		return "", fmt.Errorf("文件不存在: %s", importPath)
+	}
+
+	// 在 rootPath 中查找
+	searchPaths := []string{rootPath}
+	// 添加所有 proto_path
+	for _, protoPath := range protoPaths {
+		if protoPath != "" {
+			searchPaths = append(searchPaths, protoPath)
+		}
+	}
+
+	// 遍历所有路径查找文件
+	for _, basePath := range searchPaths {
+		fullPath := filepath.Join(basePath, importPath)
+		if _, err := os.Stat(fullPath); err == nil {
+			return fullPath, nil
+		}
+	}
+
+	return "", fmt.Errorf("在以下路径中未找到文件 %s: %v", importPath, searchPaths)
+}
+
 // 递归加载引用的消息类型
 func loadReferencedMessages(definition *proto.Proto, data *PbInfo) {
 	proto.Walk(definition,
@@ -685,7 +715,7 @@ func loadReferencedMessages(definition *proto.Proto, data *PbInfo) {
 	)
 }
 
-func parseProtoFile(protoFile string) (*PbInfo, error) {
+func parseProtoFile(protoFile string, protoPaths []string, rootPath string) (*PbInfo, error) {
 	protoContent, err := os.ReadFile(protoFile)
 	if err != nil {
 		color.Red("读取 proto 文件失败: %v", err)
@@ -738,17 +768,13 @@ func parseProtoFile(protoFile string) (*PbInfo, error) {
 	for _, element := range definition.Elements {
 		if imp, ok := element.(*proto.Import); ok {
 			importPath := strings.Trim(imp.Filename, "\"")
-			// 如果是相对路径，则基于工作目录解析
-			if !filepath.IsAbs(importPath) {
-				// 使用当前工作目录作为基准
-				workDir, err := os.Getwd()
-				if err != nil {
-					color.Red("获取工作目录失败: %v", err)
-					continue
-				}
-				importPath = filepath.Join(workDir, importPath)
+			// 在多个 proto_path 中查找文件
+			resolvedPath, err := findImportFile(importPath, protoPaths, rootPath)
+			if err != nil {
+				color.Red("查找引用的 proto 文件失败: %v", err)
+				continue
 			}
-			importContent, err := os.ReadFile(importPath)
+			importContent, err := os.ReadFile(resolvedPath)
 			if err != nil {
 				color.Red("读取引用的 proto 文件失败: %v", err)
 				continue
