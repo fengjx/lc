@@ -60,6 +60,12 @@ var flags = []cli.Flag{
 		Usage: "protoc 的 go-grpc_opt 参数",
 		Value: "",
 	},
+	&cli.StringFlag{
+		Name:  "proto_path",
+		Usage: "protoc 的 proto_path 参数，指定依赖的 proto 文件路径",
+		Value: "",
+	},
+	
 }
 
 // funcMap 定义了模板中可用的函数
@@ -280,6 +286,7 @@ func action(ctx *cli.Context) error {
 	outDir := ctx.String("out")
 	goOpt := ctx.String("go_opt")
 	grpcOpt := ctx.String("grpc_opt")
+	protoPath := ctx.String("proto_path")
 
 	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -343,6 +350,7 @@ func action(ctx *cli.Context) error {
 		args := []string{
 			"--go_out=" + outDir,
 			"--go-grpc_out=" + outDir,
+			"--proto_path=" + protoPath,
 		}
 		if currentGoOpt != "" {
 			args = append(args, "--go_opt="+currentGoOpt)
