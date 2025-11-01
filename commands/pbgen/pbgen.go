@@ -48,7 +48,13 @@ var flags = []cli.Flag{
 		Name:    "out",
 		Aliases: []string{"o"},
 		Usage:   "输出目录",
-		Value:   "./",
+		Value:   ".",
+	},
+	&cli.StringFlag{
+		Name:    "root",
+		Aliases: []string{"r"},
+		Usage:   "根目录",
+		Value:   ".",
 	},
 	&cli.StringSliceFlag{
 		Name:  "go_opt",
@@ -273,17 +279,21 @@ func action(ctx *cli.Context) error {
 		return fmt.Errorf("请指定至少一个 proto 文件")
 	}
 
-	rootPath, err := os.Getwd()
-	if err != nil {
-		color.Red("获取当前目录失败: %v", err)
-		return err
-	}
-
+	rootPath := ctx.String("root")
 	patterns := ctx.Args().Slice()
 	outDir := ctx.String("out")
 	goOpts := ctx.StringSlice("go_opt")
 	grpcOpts := ctx.StringSlice("grpc_opt")
 	protoPaths := ctx.StringSlice("proto_path")
+
+	var err error
+	if rootPath == "" {
+		rootPath, err = os.Getwd()
+		if err != nil {
+			color.Red("获取当前目录失败: %v", err)
+			return err
+		}
+	}
 
 	// 创建输出目录
 	if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -295,6 +305,11 @@ func action(ctx *cli.Context) error {
 	var allProtoFiles []string
 	// 处理每个文件模式
 	for _, pattern := range patterns {
+		// 直接指定文件
+		if strings.HasSuffix(strings.TrimSpace(pattern), ".proto") {
+			allProtoFiles = append(allProtoFiles, pattern)
+			continue
+		}
 		// 查找所有匹配的 proto 文件
 		protoFiles, err := findProtoFiles(rootPath, pattern)
 		if err != nil {
@@ -382,7 +397,7 @@ func action(ctx *cli.Context) error {
 			}
 		}
 		args = append(args, "--go-grpc_out=" + outDir)
-		
+
 		args = append(args, protoFile)
 		cmd := execx.WrapCmd("protoc", args)
 		color.Blue("执行 protoc 命令: %s", cmd)
