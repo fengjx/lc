@@ -358,31 +358,32 @@ func action(ctx *cli.Context) error {
 			}
 		}
 
-		args := []string{
-			"--go_out=" + outDir,
-			"--go-grpc_out=" + outDir,
-			"--proto_path=.",
-		}
+		var args []string
 		// 添加所有 proto_path 参数
 		for _, protoPath := range protoPaths {
 			if protoPath != "" {
 				args = append(args, "--proto_path="+protoPath)
 			}
 		}
+		args = append(args, "--proto_path=.")
+
 		// 添加所有 go_opt 参数
 		for _, goOpt := range currentGoOpts {
 			if goOpt != "" {
 				args = append(args, "--go_opt="+goOpt)
 			}
 		}
+		args = append(args, "--go_out=" + outDir)
+
 		// 添加所有 go-grpc_opt 参数
 		for _, grpcOpt := range currentGrpcOpts {
 			if grpcOpt != "" {
 				args = append(args, "--go-grpc_opt="+grpcOpt)
 			}
 		}
+		args = append(args, "--go-grpc_out=" + outDir)
+		
 		args = append(args, protoFile)
-
 		cmd := execx.WrapCmd("protoc", args)
 		color.Blue("执行 protoc 命令: %s", cmd)
 		if _, err := execx.Run(cmd, ""); err != nil {
