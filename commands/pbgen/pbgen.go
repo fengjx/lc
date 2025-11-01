@@ -286,7 +286,7 @@ func action(ctx *cli.Context) error {
 		color.Red("创建输出目录失败: %v", err)
 		return err
 	}
-	color.Green("目标文件: %s", strings.Join(patterns, ","))
+	color.Blue("目标文件: %s", strings.Join(patterns, ","))
 
 	var allProtoFiles []string
 	// 处理每个文件模式
@@ -313,7 +313,7 @@ func action(ctx *cli.Context) error {
 		return fmt.Errorf("未找到 proto 文件: %s", strings.Join(patterns, ","))
 	}
 
-	color.Green("查找到 proto 文件 \n%s", strings.Join(finalProtoFiles, "\n"))
+	color.Blue("查找到 proto 文件 \n%s", strings.Join(finalProtoFiles, "\n"))
 	// 遍历处理每个 proto 文件
 	for _, protoFile := range finalProtoFiles {
 		// 解析 proto 文件获取服务信息
@@ -353,6 +353,7 @@ func action(ctx *cli.Context) error {
 		args = append(args, protoFile)
 
 		cmd := execx.WrapCmd("protoc", args)
+		color.Blue("执行 protoc 命令: %s", cmd)
 		if _, err := execx.Run(cmd, ""); err != nil {
 			color.Red("执行 protoc 命令失败: %v", err)
 			return err
